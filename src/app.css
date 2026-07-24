@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+@plugin "daisyui";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-inter: "Inter", "ui-sans-serif", "sans-serif", "Arial";
+
+  --breakpoint-xs: 26.25rem;    /* 420px */
+  --breakpoint-fhd: 114rem;     /* 1824px */
+  --breakpoint-qhd: 152rem;     /* 2432px */
+  --breakpoint-qhd-plus: 190rem; /* 3040px */
+  --breakpoint-uhd: 228rem;     /* 3648px */
+
+  --shadow-md-res: 0 0.25rem 0.375rem -0.0625rem rgb(0 0 0 / 0.1), 0 0.125rem 0.25rem -0.125rem rgb(0 0 0 / 0.1);
+}

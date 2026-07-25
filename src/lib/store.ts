@@ -1,8 +1,9 @@
-import { createSignal, createEffect, createRoot } from "solid-js";
+import { createSignal, createEffect, createRoot, lazy } from "solid-js";
 
 const EXPIRE = 604800;
 export const DEFAULT_DASHBOARD = "default";
 export const DEFAULT_MENU = "overview";
+export const DefaultComponent = lazy(() => import("~/routes/dashboard/[name]/overview"));
 
 function deleteCookie(name: string) {
   document.cookie = name + "=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";

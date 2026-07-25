@@ -18,7 +18,7 @@ export default function ProfileMenu() {
         </div>
       </div>
       <div class="h-full xl:ml-2 text-sm">
-        <a href="/login" class="group h-full flex flex-col lg:flex-row items-center justify-center font-medium">
+        <a href="/auth/login" class="group h-full flex flex-col lg:flex-row items-center justify-center font-medium">
           <span class="mr-1 hidden lg:inline group-hover:text-sky-800 dark:group-hover:text-sky-300">Login</span>
           <span class="icon-login text-[1.5rem] lg:text-[2rem] text-sky-700"></span>
           <span class="mr-1 lg:hidden group-hover:text-sky-800 dark:group-hover:text-sky-300">Login</span>
@@ -62,7 +62,7 @@ export default function ProfileMenu() {
                 {/* <span class="h-4 px-1 bg-red-700 rounded-md text-[0.6875rem] text-gray-100">5</span> */}
               </div>
             </a>
-            <a href="/logout" class="w-full h-8 px-3 flex flex-row items-center border-t border-slate-200 hover:text-sky-800 dark:border-slate-700 dark:hover:text-sky-300">
+            <a href="/auth/logout" class="w-full h-8 px-3 flex flex-row items-center border-t border-slate-200 hover:text-sky-800 dark:border-slate-700 dark:hover:text-sky-300">
               <span class="icon-logout text-[1.25rem] w-5"></span>
               <span class="ml-2">Logout</span>
             </a>

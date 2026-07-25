@@ -92,8 +92,8 @@ export const authServer: AuthServer = {
     const token = readCookie("auth_token");
     if (address) this.address = address;
     if (token) this.auth_token = token;
-    if (address && token) {
-      return { address: address, auth_token: token };
+    if (address) {
+      return { address: address, auth_token: token ? token : "" };
     }
     return null;
   },

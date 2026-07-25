@@ -3,8 +3,19 @@ import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 import "./app.css";
+import { authServer, resourceServer } from "./lib/store";
 
 export default function App() {
+  // get auth server definition 
+  fetch("/schema/auth.json")
+    .then(async (response) => {
+      const auth = await response.json();
+      authServer.setAddress(auth.address);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+
   return (
     <Router
       root={props => (

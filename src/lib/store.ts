@@ -42,7 +42,7 @@ export const langs = [
 export const [lang, setLang] = createRoot(() => {
   const cookieLang = readCookie("lang");
   const initialLang = cookieLang ? cookieLang : "ID";
-  let [lang, setLang] = createSignal(initialLang);
+  const [lang, setLang] = createSignal(initialLang);
   createEffect(() => {
     createCookie("lang", lang(), EXPIRE);
   });

@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { user_login } from "bbthings_grpc";
+import { user_login } from "bbthings_grpc/auth";
 import { authServer, resourceServer, setUserId } from "~/lib/store";
 
 export default function Login() {

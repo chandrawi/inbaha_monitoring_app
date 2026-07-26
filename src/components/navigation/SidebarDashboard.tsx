@@ -17,9 +17,12 @@ export default function SidebarDashboard() {
   });
   const menuSchema = () => dashboardMenu() === undefined ? [] : dashboardMenu();
 
-  const menus = () => menuSchema()!.filter((menu) => menu.id == menu.parent_id);
-  const submenus = () => menuSchema()!.filter((menu) => menu.id != menu.parent_id);
-  const filterSubmenu = (parent_id: number) => submenus().filter((submenu) => submenu.parent_id == parent_id);
+  const menus = () => menuSchema()?.filter((menu) => menu.id == menu.parent_id);
+  const submenus = () => menuSchema()?.filter((menu) => menu.id != menu.parent_id);
+  const filterSubmenu = (parent_id: number) => {
+    const subs = submenus();
+    return subs ? subs.filter((submenu) => submenu.parent_id == parent_id) : [];
+  };
   const isPortal = (menu: DashboardMenu) => {
     const split = String(menu.link).split("/");
     return split.length > 1 && split[1] !== "dashboard";

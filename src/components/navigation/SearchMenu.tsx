@@ -7,7 +7,7 @@ interface SearchMenuProps {
 
 export default function SearchMenu(props: SearchMenuProps) {
 
-  let [searchFocus, setsearchFocus] = createSignal(false);
+  const [searchFocus, setsearchFocus] = createSignal(false);
 
   let searchInput!: HTMLInputElement;
   createEffect(() => {

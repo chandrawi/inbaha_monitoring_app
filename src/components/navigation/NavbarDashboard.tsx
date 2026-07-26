@@ -6,7 +6,7 @@ import ProfileMenu from "./ProfileMenu";
 
 export default function NavbarDashboard() {
 
-  let [searchExpand, setSearchExpand] = createSignal(false);
+  const [searchExpand, setSearchExpand] = createSignal(false);
 
   return (
     <div class="fixed z-30 top-0 w-full h-14 flex flex-row bg-white dark:bg-slate-900 shadow-md-res shadow-slate-200 dark:shadow-slate-950 text-gray-800 dark:text-gray-200">

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "description",
+    "text": "Description",
+    "icon": "icon-list_square",
+    "component": "description_default"
+  },
+  {
+    "name": "specification",
+    "text": "Specification",
+    "icon": "icon-list_square",
+    "component": "specification_default"
+  }
+]

@@ -39,3 +39,10 @@ export type OverviewCardsSchema = OverviewSchema & {
     float_precission: { [key:string]: number }
   };
 };
+
+export type InformationSchema = {
+  name: string;
+  text: string;
+  icon: string;
+  component: string;
+};

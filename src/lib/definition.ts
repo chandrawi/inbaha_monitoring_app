@@ -21,3 +21,21 @@ export type DashboardMenu = {
   icon: string;
   link: string;
 };
+
+export type OverviewSchema = {
+  name: string;
+  text: string;
+  icon: string;
+};
+
+export type OverviewCardsSchema = OverviewSchema & {
+  sets: {
+    id: string;
+    name: string;
+  }[];
+  config: {
+    live_range: number;
+    live_ranges: number[];
+    float_precission: { [key:string]: number }
+  };
+};

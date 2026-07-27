@@ -21,56 +21,63 @@
   "link": ""
 }, {
   "id": 3,
-  "parent_id": 3,
+  "parent_id": 1,
+  "name": "specification",
+  "text": "Specification",
+  "icon": "icon-list_square",
+  "link": ""
+}, {
+  "id": 4,
+  "parent_id": 4,
   "name": "data_log",
   "text": "Data Log",
   "icon": "icon-data",
   "link": ""
 }, {
-  "id": 4,
-  "parent_id": 3,
+  "id": 5,
+  "parent_id": 4,
   "name": "sensor_a",
   "text": "Sensor A",
   "icon": "icon-list_square",
   "link": ""
 }, {
-  "id": 5,
-  "parent_id": 3,
+  "id": 6,
+  "parent_id": 4,
   "name": "sensor_b",
   "text": "Sensor B",
   "icon": "icon-list_square",
   "link": ""
 }, {
-  "id": 6,
-  "parent_id": 3,
+  "id": 7,
+  "parent_id": 4,
   "name": "sensor_c",
   "text": "Sensor C",
   "icon": "icon-list_square",
   "link": ""
 }, {
-  "id": 7,
-  "parent_id": 3,
+  "id": 8,
+  "parent_id": 4,
   "name": "power_monitor",
   "text": "Power Monitor",
   "icon": "icon-list_square",
   "link": ""
 }, {
-  "id": 8,
-  "parent_id": 8,
+  "id": 9,
+  "parent_id": 9,
   "name": "analysis",
   "text": "Analysis",
   "icon": "icon-analysis",
   "link": ""
 }, {
-  "id": 9,
-  "parent_id": 8,
+  "id": 10,
+  "parent_id": 9,
   "name": "analysis_a",
   "text": "Analysis A",
   "icon": "icon-list_square",
   "link": ""
 }, {
-  "id": 10,
-  "parent_id": 10,
+  "id": 11,
+  "parent_id": 11,
   "name": "administrator",
   "text": "Administrator",
   "icon": "icon-administrator",

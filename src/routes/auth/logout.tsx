@@ -16,7 +16,8 @@ export default function Logout() {
     }
     setUserId(null);
     navigate("/auth/login", {replace:true});
-  }).catch(() => {
+  }).catch((error) => {
+    console.error(error);
     setUserId(null);
     navigate("/auth/login", {replace:true});
   });

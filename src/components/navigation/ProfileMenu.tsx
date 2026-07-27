@@ -6,7 +6,10 @@ export default function ProfileMenu() {
 
   const [userData] = createResource(userId(), async (user_id) => {
     return read_user(authServer.get()!, { id: user_id })
-      .catch(() => null);
+      .catch((error) => {
+        console.error(error);
+        return null;
+      });
   });
 
   return (

@@ -1,5 +1,5 @@
 import { useLocation } from "@solidjs/router";
-import { createEffect, onMount, Match, Show, Switch } from "solid-js";
+import { onMount, Match, Show, Switch } from "solid-js";
 import { OverviewSchema, OverviewCardsSchema } from "~/lib/definition";
 import { getDashboardPath } from "~/lib/utility";
 import { useDashboard } from "~/context/DashboardContext";

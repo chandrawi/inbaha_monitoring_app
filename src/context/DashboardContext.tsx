@@ -1,7 +1,7 @@
 import { createSignal, createResource, createContext, useContext, JSX, Resource, Accessor, Setter } from "solid-js";
-import { OverviewCardsSchema, InformationSchema } from "~/lib/definition";
+import { OverviewCardsSchema, InformationSpecificationSchema } from "~/lib/definition";
 
-type DashboardSchema = OverviewCardsSchema | InformationSchema[] | null;
+type DashboardSchema = OverviewCardsSchema | InformationSpecificationSchema[] | null;
 
 interface DashboardContextType {
   schema: Resource<DashboardSchema>;

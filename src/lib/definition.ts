@@ -46,3 +46,10 @@ export type InformationSchema = {
   icon: string;
   component: string;
 };
+
+export type InformationSpecificationSchema = InformationSchema & {
+  table: {
+    title: string;
+    rows: string[][];
+  }[];
+};

@@ -10,7 +10,8 @@ export type ResourceSchema = {
 export type DashboardPath = {
   name: string;
   menu: string;
-  submenu: string | null;
+  submenu: string;
+  item: string;
 };
 
 export type DashboardMenu = {

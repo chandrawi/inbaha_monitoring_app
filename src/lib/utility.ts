@@ -5,8 +5,9 @@ export function getDashboardPath(pathname: string): DashboardPath {
   const s = pathname.split("/");
   const name = s[2] ? s[2] : DEFAULT_DASHBOARD;
   const menu = s[3] ? s[3] : DEFAULT_MENU;
-  const submenu = s[4] ? s[4] : null;
-  return { name: name, menu: menu, submenu: submenu };
+  const submenu = s[4] ? s[4] : "";
+  const item = s[5] ? s[5] : "";
+  return { name: name, menu: menu, submenu: submenu, item: item };
 }
 
 function zeropad(input: string | number, num: number): string {

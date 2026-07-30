@@ -1,6 +1,6 @@
 import { useLocation } from "@solidjs/router";
 import { onMount, Match, Show, Switch } from "solid-js";
-import { OverviewSchema, OverviewCardsSchema } from "~/lib/definition";
+import { BasicSchema, OverviewCardsSchema } from "~/lib/definition";
 import { getDashboardPath } from "~/lib/utility";
 import { useDashboard } from "~/context/DashboardContext";
 import { useResource } from "~/context/ResourceContext";
@@ -22,7 +22,7 @@ export default function Overview() {
   return (
     <Show when={resource() && schema()}>
       <Switch>
-        <Match when={(schema() as OverviewSchema)?.name === "overview_cards"}>
+        <Match when={(schema() as BasicSchema)?.name === "overview_cards"}>
           <OverviewCards resource={resource()!} overview={(schema() as OverviewCardsSchema)} />
         </Match>
       </Switch>

@@ -1,5 +1,6 @@
 import { useLocation } from "@solidjs/router";
 import { onMount, Match, Show, Switch } from "solid-js";
+import { InformationSchema } from "~/lib/definition";
 import { getDashboardPath } from "~/lib/utility";
 import { useDashboard } from "~/context/DashboardContext";
 import DescriptionDefault from "~/components/information/DescriptionDefault";
@@ -20,12 +21,14 @@ export default function Information() {
   });
 
   const children1 = () => {
-    const s = schema();
-    return Array.isArray(s) ? s.flatMap((item) => { return { name: item.name, text: item.text } }) : [];
+    const s = schema() as InformationSchema;
+    if (!s) return [];
+    return Array.isArray(s.children) ? s.children.flatMap((item) => { return { name: item.name, text: item.text } }) : [];
   };
   const component = () => {
-    const s = schema();
-    return Array.isArray(s) ? s.find((item) => item.name == "description")?.component : "";
+    const s = schema() as InformationSchema;
+    if (!s) return [];
+    return Array.isArray(s.children) ? s.children.find((item) => item.name == "description")?.component : "";
   };
 
   return(

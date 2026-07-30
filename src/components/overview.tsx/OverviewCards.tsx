@@ -22,13 +22,11 @@ export default function OverviewCards(props: OverviewCardsProps) {
 
   // get data set definition based on set id in overview schema
   const [set] = createResource(props.overview, async (overview) => {
-    if (overview.sets.length) {
-      return await read_set(resourceServer.get(api_id)!, { id: overview.sets[0].id })
-        .catch((error) => {
-          console.error(error);
-          return null;
-        });
-    }
+    return await read_set(resourceServer.get(api_id)!, { id: overview.set.id })
+      .catch((error) => {
+        console.error(error);
+        return null;
+      });
   });
   // get models corresponding data set definition
   const [models] = createResource(set, async (set) => {
@@ -54,14 +52,16 @@ export default function OverviewCards(props: OverviewCardsProps) {
   const [dataset, {refetch}] = createResource(props.overview, async (overview) => {
     const tEnd = Date.now();
     const tBegin = tEnd - timeLater();
-    if (overview.sets.length) {
-      return await list_data_set_by_range(resourceServer.get(api_id)!, {
-        set_id: overview.sets[0].id,
-        begin: new Date(tBegin),
-        end: new Date(tEnd),
-        tag: null
-      });
-    }
+    return await list_data_set_by_range(resourceServer.get(api_id)!, {
+      set_id: overview.set.id,
+      begin: new Date(tBegin),
+      end: new Date(tEnd),
+      tag: null
+    })
+    .catch((error) => {
+      console.error(error);
+      return [];
+    });
   });
 
   function datasetLast() {

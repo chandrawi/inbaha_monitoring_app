@@ -23,17 +23,17 @@ export type DashboardMenu = {
   link: string;
 };
 
-export type OverviewSchema = {
+export type BasicSchema = {
   name: string;
   text: string;
   icon: string;
 };
 
-export type OverviewCardsSchema = OverviewSchema & {
-  sets: {
+export type OverviewCardsSchema = BasicSchema & {
+  set: {
     id: string;
     name: string;
-  }[];
+  };
   config: {
     live_range: number;
     live_ranges: number[];
@@ -41,16 +41,64 @@ export type OverviewCardsSchema = OverviewSchema & {
   };
 };
 
-export type InformationSchema = {
-  name: string;
-  text: string;
-  icon: string;
+export type OverviewSchema = OverviewCardsSchema;
+
+export type InformationDescriptionSchema = BasicSchema & {
   component: string;
 };
 
-export type InformationSpecificationSchema = InformationSchema & {
+export type InformationSpecificationSchema = BasicSchema & {
+  component: string;
   table: {
     title: string;
     rows: string[][];
   }[];
+};
+
+export type InformationChildSchema = InformationDescriptionSchema | InformationSpecificationSchema;
+
+export type InformationSchema = BasicSchema & {
+  children: InformationChildSchema[];
+};
+
+export type DataLogViewSchema = BasicSchema & {
+  model_id: string;
+  model_index: number[];
+  devices: {
+    id: string;
+    name: string;
+  }[];
+  config: {
+    live_ranges: number[];
+    live_range: number;
+    view_mode: "table" | "graph";
+    time_mode: "live" | "history";
+    float_precission?: number;
+    chart_value_range?: number[][];
+  };
+};
+
+export type DatasetLogViewSchema = BasicSchema & {
+  sets: {
+    id: string;
+    name: string;
+  }[];
+  config: {
+    live_ranges: number[];
+    live_range: number;
+    view_mode: "table" | "graph";
+    time_mode: "live" | "history";
+    float_precission?: number;
+    chart_value_range?: number[][];
+  };
+};
+
+export type DataLogChildSchema = DataLogViewSchema | DatasetLogViewSchema;
+
+export type DataLogSchema = {
+  name: string;
+  text: string;
+  icon: string;
+  nested: boolean;
+  children: DataLogChildSchema[];
 };

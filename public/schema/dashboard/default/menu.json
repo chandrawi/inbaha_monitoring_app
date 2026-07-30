@@ -64,20 +64,13 @@
 }, {
   "id": 9,
   "parent_id": 9,
-  "name": "analysis",
-  "text": "Analysis",
-  "icon": "icon-analysis",
+  "name": "dataset_log",
+  "text": "Data Set",
+  "icon": "icon-data_buffer",
   "link": ""
 }, {
   "id": 10,
-  "parent_id": 9,
-  "name": "analysis_a",
-  "text": "Analysis A",
-  "icon": "icon-list_square",
-  "link": ""
-}, {
-  "id": 11,
-  "parent_id": 11,
+  "parent_id": 10,
   "name": "administrator",
   "text": "Administrator",
   "icon": "icon-administrator",

@@ -16,6 +16,9 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
   const config = props.data_log.config;
   const api_id = props.resource.api_id;
   const path = props.path;
+  if (!path.item && props.data_log.sets.length) {
+    path.item = props.data_log.sets[0].name;
+  }
 
   const [searchParams, setSearchParams] = useSearchParams();
   const initViewMode = searchParams.view ? searchParams.view : config.view_mode;

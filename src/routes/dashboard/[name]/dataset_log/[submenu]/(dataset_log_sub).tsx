@@ -9,7 +9,7 @@ import DataLogList from "~/components/data_log/DataLogList";
 import DataLogView from "~/components/data_log/DataLogView";
 import DataSetLogView from "~/components/data_log/DatasetLogView";
 
-export default function DataLogSub() {
+export default function DatasetLogSub() {
   // get dashboard path based on URL
   const location = useLocation();
   const dashboardPath = getDashboardPath(location.pathname);
@@ -60,7 +60,7 @@ export default function DataLogSub() {
 
   return (
     <Show when={schema()}>
-      <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "data_log", text: "Data Log" }} children1={children1()} children2={children2()} child1={dashboardPath.submenu} child2={dashboardPath.item} />
+      <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "dataset_log", text: "Data Set" }} children1={children1()} children2={children2()} child1={dashboardPath.submenu} child2={dashboardPath.item} />
       <Show when={mode() == "single"} fallback={
         <DataLogList path={dashboardPath} data_log={schema()! as DataLogSchema} />
       }>

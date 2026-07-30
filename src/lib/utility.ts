@@ -42,3 +42,13 @@ export function stringToDate(timestamp: string): Date {
 
   return new Date(year, month, date, hour, minute, second);
 }
+
+export function rangeName(range: number) {
+  if (range < 60000) return String(range / 1000) + " seconds";
+  else if(range == 60000) return "1 minute";
+  else if(range < 3600000) return String(range / 60000) + " minutes";
+  else if(range == 3600000) return "1 hour";
+  else if(range < 86400000) return String(range / 3600000) + " hours";
+  else if(range == 86400000) return "1 day";
+  else return String(range / 86400000) + " day(s)";
+}

@@ -1,0 +1,314 @@
+import { useSearchParams } from "@solidjs/router";
+import { createEffect, createResource, createSignal, For, Show } from "solid-js";
+import { list_data_by_range, read_model } from "bbthings_grpc/resource";
+import { resourceServer } from "~/lib/store";
+import { dateToString, rangeName } from "~/lib/utility";
+import { DashboardPath, ResourceSchema, DataLogViewSchema } from "~/lib/definition";
+import { DataTable, TableColumns, TableRowData } from "~/components/table/DataTable";
+
+interface DataLogViewProps {
+  path: DashboardPath;
+  resource: ResourceSchema;
+  data_log: DataLogViewSchema;
+};
+
+export default function DataLogView(props: DataLogViewProps) {
+  const config = props.data_log.config;
+  const api_id = props.resource.api_id;
+  const path = props.path;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initViewMode = searchParams.view ? searchParams.view : config.view_mode;
+  const initTimeMode = searchParams.time ? searchParams.time : config.time_mode;
+  const initTimeLater= typeof searchParams.later === "string" 
+    ? parseInt(searchParams.later) 
+    : config.live_range;
+  const initTimeBegin = typeof searchParams.begin === "string" && new Date(searchParams.begin) < new Date() 
+    ? new Date(searchParams.begin) 
+    : new Date(Date.now() - initTimeLater);
+  const initTimeEnd = typeof searchParams.end === "string" && new Date(searchParams.end) < new Date() 
+    ? new Date(searchParams.end) 
+    : new Date();
+
+  let [viewMode, setViewMode] = createSignal(initViewMode);
+  let [timeMode, setTimeMode] = createSignal(initTimeMode);
+  let [timeLater, setTimeLater] = createSignal(initTimeLater);
+  let [timeBegin, setTimeBegin] = createSignal(initTimeBegin);
+  let [timeEnd, setTimeEnd] = createSignal(initTimeEnd);
+
+  // get model definition based on model id in data_log schema
+  const [model] = createResource(props.data_log, async (input) => {
+    return await read_model(resourceServer.get(api_id)!, { id: input.model_id })
+      .catch((error) => {
+        console.error(error);
+        return null;
+      });
+  });
+
+  // get data schema based on device id in data_log schema and time mode setting
+  const [data, {refetch} ] = createResource(props.data_log, async (input) => {
+    const device_id = input.devices.find((item) => item.name == path.item)?.id;
+    if (timeMode() == "live") {
+      const tLater = new Date(Date.now() - timeLater());
+      return await list_data_by_range(resourceServer.get(api_id)!, {
+        device_id: device_id ? device_id : "",
+        model_id: input.model_id,
+        begin: tLater,
+        end: new Date(Date.now()),
+        tag: null
+      })
+      .catch((error) => {
+        console.error(error);
+        return [];
+      });
+    }
+    else if (timeMode() == "history") {
+      return await list_data_by_range(resourceServer.get(api_id)!, {
+        device_id: device_id ? device_id : "",
+        model_id: input.model_id,
+        begin: timeBegin(),
+        end: timeEnd(),
+        tag: null
+      })
+      .catch((error) => {
+        console.error(error);
+        return [];
+      });
+    }
+    return [];
+  });
+
+  function columns(): TableColumns | undefined {
+    if (model()) {
+      const configs = model()!.configs;
+      const indexes = props.data_log.model_index;
+      const cols: TableColumns = {
+        ts: { content: "Timestamp", sortable: true, align: "left" }
+      };
+      for (const index in configs) {
+        const i = parseInt(index);
+        if (indexes.includes(i)) {
+          const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
+          const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_, conf) => conf).value;
+          cols[String(scale)] = {
+            content: scale + " [" + symbol + "]",
+            sortable: true,
+            float_precission: config.float_precission
+          }
+        }
+      }
+      return cols;
+    }
+  }
+
+  function dataTable(): TableRowData[] | undefined {
+    if (model() && data()) {
+      const configs = model()!.configs;
+      const indexes = props.data_log.model_index;
+      const dataTable: TableRowData[] = [];
+      for (const dataschema of data()!) {
+        const dataRow: TableRowData = {
+          ts: dateToString(dataschema.timestamp)
+        };
+        for (const i in dataschema.data) {
+          if (indexes.includes(parseInt(i))) {
+            const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
+            let value = dataschema.data[i];
+            dataRow[String(scale)] = value;
+          }
+        }
+        dataTable.push(dataRow);
+      }
+      return dataTable;
+    }
+  }
+
+  function itemCharts() {
+    if (model()) {
+      const configs = model()!.configs;
+      const indexes = props.data_log.model_index;
+      const items = [];
+      for (const index in configs) {
+        const i = parseInt(index);
+        const indexOfIndexes = indexes.findIndex((index) => index == i);
+        if (indexes.includes(i)) {
+          const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
+          const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_, conf) => conf).value;
+          items.push({
+            scale: String(scale),
+            content: scale + " [" + symbol + "]",
+            range: config.chart_value_range ? config.chart_value_range[indexOfIndexes] : undefined
+          })
+        }
+      }
+      return items;
+    }
+    return [];
+  }
+
+  let selectTimeMode! : HTMLSelectElement;
+  let selectRange! : HTMLSelectElement;
+  let datetimeBegin! : HTMLInputElement;
+  let datetimeEnd! : HTMLInputElement;
+
+  function submitTimeMode(e: { preventDefault: () => void; }) {
+    e.preventDefault();
+    if (selectTimeMode.value == "live") {
+      setSearchParams({
+        time: "live",
+        later: selectRange.value,
+        begin: null,
+        end: null
+      });
+      setTimeLater(parseInt(selectRange.value));
+      refetch();
+    }
+    else if (selectTimeMode.value == "history") {
+      setSearchParams({
+        time: "history",
+        later: null,
+        begin: datetimeBegin.value,
+        end: datetimeEnd.value
+      });
+      if (datetimeBegin.value && datetimeEnd.value) {
+        if (new Date(datetimeBegin.value) < new Date()) setTimeBegin(new Date(datetimeBegin.value));
+        if (new Date(datetimeEnd.value) < new Date()) setTimeEnd(new Date(datetimeEnd.value));
+      }
+      refetch();
+    }
+  }
+
+  function changeViewMode(mode: string) {
+    setViewMode(mode);
+    setSearchParams({
+      view: mode
+    });
+  }
+
+  createEffect(() => {
+    if (typeof searchParams.time == "string") selectTimeMode.value = searchParams.time;
+    if (typeof searchParams.later == "string") selectRange.value = searchParams.later;
+    if (typeof searchParams.begin == "string") datetimeBegin.value = searchParams.begin;
+    if (typeof searchParams.end == "string") datetimeEnd.value = searchParams.end;
+  });
+
+  const [rangeList, setRangeList] = createSignal([300000, 900000, 1800000, 3600000]);
+  createEffect(() => {
+    if (Array.isArray(config.live_ranges)) setRangeList(config.live_ranges);
+    if (config.live_range) selectRange.value = typeof searchParams.later == "string" ? searchParams.later : String(config.live_range);
+  });
+
+  return (
+    <>
+      <div class="w-full xs:px-1 py-1">
+        <div class="w-full max-w-3xl xs:rounded-sm border border-slate-200 dark:border-slate-700">
+          <div class="w-full flex flex-row items-center justify-between bg-gray-100 dark:bg-gray-800">
+            <div class="mx-2 my-1.5 flex flex-row items-center font-semibold">
+              <span class={(props.data_log.icon ? props.data_log.icon : "icon-list_square") + " text-[1.5rem] align-middle"}></span>
+              <span class="ml-1 align-middle">{props.data_log.name}&nbsp;</span>
+            </div>
+            <div class="mx-3 my-auto flex flex-row text-sm">
+              <button class={"px-2 py-0.5 text-gray-100 rounded-l-sm " 
+                + (viewMode() == 'graph' ? "bg-sky-700 cursor-default" : "bg-slate-500 hover:bg-sky-800 hover:text-white")}
+                onclick={() => changeViewMode("graph")}
+              >
+                Graph
+              </button>
+              <button class={"px-2 py-0.5 text-gray-100 rounded-r-sm " 
+                + (viewMode() == 'table' ? "bg-sky-700 cursor-default" : "bg-slate-500 hover:bg-sky-800 hover:text-white")}
+                onclick={() => changeViewMode("table")}
+              >
+                Table
+              </button>
+            </div>
+          </div>
+          <div class="w-full bg-white dark:bg-gray-900 text-sm">
+            <form action="#" class="px-2 py-2 flex flex-row flex-wrap" onsubmit={submitTimeMode}>
+              <div class="mx-1 my-1 flex flex-row">
+                <label for="input-mode" class="px-1.5 py-0.5 rounded-l-sm bg-sky-100 dark:bg-sky-950">Mode</label>
+                <select name="time-mode" class="px-1 bg-white border border-sky-100 dark:bg-slate-800 dark:border-sky-950"
+                  ref={selectTimeMode} onChange={() => setTimeMode(selectTimeMode.value)}
+                >
+                  <option value="live" selected={timeMode() == "live"}>Live</option>
+                  <option value="history" selected={timeMode() == "history"}>History</option>
+                </select>
+              </div>
+              <div class="grow"></div>
+              <div class="flex flex-row flex-wrap justify-between">
+                <div class="mx-1 my-1 flex flex-row" classList={{"hidden": timeMode() != "live"}}>
+                  <label for="input-later" class="px-1.5 py-0.5 rounded-l-sm bg-slate-200 dark:bg-slate-700">Range</label>
+                  <select name="time-later" class="px-1 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700"
+                    ref={selectRange}
+                  >
+                    <For each={rangeList()}>
+                    {(item) => (
+                      <option value={item} selected={timeLater() == item}>{rangeName(item)}</option>
+                    )}
+                    </For>
+                  </select>
+                </div>
+                <div class="mx-1 my-1 flex flex-row" classList={{"hidden": timeMode() != "history"}}>
+                  <label for="input-begin" class="min-w-12 px-1.5 py-0.5 rounded-l-sm bg-slate-200 dark:bg-slate-700">Begin</label>
+                  <input type="datetime-local" step="1" name="time-begin" class="w-48 px-1 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700" 
+                    ref={datetimeBegin}
+                    value={dateToString(timeBegin())}
+                  />
+                </div>
+                <div class="mx-1 my-1 flex flex-row" classList={{"hidden": timeMode() != "history"}}>
+                  <label for="input-end" class="min-w-12 px-1.5 py-0.5 rounded-l-sm bg-slate-200 dark:bg-slate-700">End</label>
+                  <input type="datetime-local" step="1" name="time-end" class="w-48 px-1 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700" 
+                    ref={datetimeEnd}
+                    value={dateToString(timeEnd())}
+                  />
+                </div>
+                <div class="grow mx-1 my-1 flex flex-row justify-end">
+                  <button class="px-2 py-0.5 bg-sky-700 text-gray-100 hover:bg-sky-800 rounded-sm hover:text-white">Set</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <Show when={viewMode() == "graph"}>
+        <div class="w-full flex flex-row flex-wrap">
+          <For each={itemCharts()}>
+          {(item) => (
+            <div class="w-full xl:w-1/2 xs:px-1 py-1 max-w-xl">
+              <div class="xs:rounded-sm border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-row items-center bg-gray-100 dark:bg-gray-800">
+                  <div class="mx-3 my-1.5 flex flex-row items-center font-medium">
+                    <span class="align-middle text-sm">{props.data_log.name}&nbsp;</span>
+                    <span class="icon-chevron_right align-middle text-[0.875rem]"></span>
+                    <span class="align-middle text-sm">&nbsp;{item.content}</span>
+                  </div>
+                </div>
+                <div class="p-3 bg-white dark:bg-gray-900">
+                  <canvas class="w-full aspect-video"></canvas>
+                </div>
+              </div>
+            </div>
+          )}
+          </For>
+        </div>
+      </Show>
+
+      <Show when={viewMode() == "table"}>
+        <div class="w-full xs:px-1 py-1 overflow-hidden">
+          <div class="w-full max-w-3xl xs:rounded-sm border border-slate-200 dark:border-slate-700">
+            <div class="flex flex-row items-center bg-gray-100 dark:bg-gray-800">
+              <div class="mx-3 my-1.5 flex flex-row items-center font-medium">
+                <span class="align-middle text-sm leading-6">{props.data_log.name}&nbsp;</span>
+              </div>
+            </div>
+            <div class="w-full xs:px-4 py-2 bg-white dark:bg-gray-900 text-sm overflow-x-auto scrollbar-custom scrollbar-gutter-auto">
+              <Show when={columns() && dataTable()}>
+                <DataTable columns={columns()!} data={dataTable()!} />
+              </Show>
+            </div>
+          </div>
+        </div>
+      </Show>
+    </>
+  );
+}

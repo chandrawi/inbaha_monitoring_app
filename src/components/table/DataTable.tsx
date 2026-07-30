@@ -5,7 +5,7 @@ export interface ColumnConfig {
   content: string;
   sortable?: boolean;
   align?: "left" | "right" | "center";
-  float_precission?: number; // keeps matching original typo spelling
+  float_precission?: number;
   string_limit?: number;
   html?: boolean;
 }
@@ -108,9 +108,9 @@ export function DataTable(props: DataTableProps) {
   // Format data value based on column configuration
   const dataValue = (value: any, column: string) => {
     const colConfig = props.columns[column];
-    if (colConfig.float_precission !== undefined && typeof value === "number" && value % 1 !== 0) {
+    if (typeof colConfig.float_precission === "number" && typeof value === "number" && value % 1 !== 0) {
       return value.toFixed(colConfig.float_precission);
-    } else if (colConfig.string_limit !== undefined && typeof value === "string") {
+    } else if (typeof colConfig.string_limit === "number" && typeof value === "string") {
       return value.substring(0, colConfig.string_limit);
     }
     return value;

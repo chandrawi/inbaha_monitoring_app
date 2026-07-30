@@ -71,9 +71,11 @@ export default function OverviewCards(props: OverviewCardsProps) {
       const dataset = datasets[datasets.length-1];
       const dataLast = [];
       for (const i in configs) {
-        const scale = configs[i].filter((conf: { name: string; }) => conf.name == "scale").reduce((_: any, conf: any) => conf).value;
-        const symbol = configs[i].filter((conf: { name: string; }) => conf.name == "symbol").reduce((_: any, conf: any) => conf).value;
-        const precission = String(scale) in config.float_precission ? config.float_precission[String(scale)] : null;
+        const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_: any, conf) => conf).value;
+        const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_: any, conf) => conf).value;
+        const precission = Array.isArray(config.float_precission)
+          ? typeof config.float_precission[i] == "number" ? config.float_precission[i] : null
+          : null;
         dataLast.push({
           ts: dataset ? dateToString(dataset.timestamp) : null,
           data: dataset ? Number(dataset.data[i]) : null,

@@ -1,18 +1,18 @@
 import { useSearchParams } from "@solidjs/router";
 import { createEffect, createResource, createSignal, For, Show } from "solid-js";
-import { list_data_by_range, read_model } from "bbthings_grpc/resource";
+import { list_data_set_by_range, list_model_by_ids, read_set } from "bbthings_grpc/resource";
 import { resourceServer } from "~/lib/store";
 import { dateToString, rangeName } from "~/lib/utility";
-import { DashboardPath, ResourceSchema, DataLogViewSchema } from "~/lib/definition";
+import { DashboardPath, ResourceSchema, DatasetLogViewSchema } from "~/lib/definition";
 import { DataTable, TableColumns, TableRowData } from "~/components/table/DataTable";
 
-interface DataLogViewProps {
+interface DatasetLogViewProps {
   path: DashboardPath;
   resource: ResourceSchema;
-  data_log: DataLogViewSchema;
+  data_log: DatasetLogViewSchema;
 };
 
-export default function DataLogView(props: DataLogViewProps) {
+export default function DataSetLogView(props: DatasetLogViewProps) {
   const config = props.data_log.config;
   const api_id = props.resource.api_id;
   const path = props.path;
@@ -36,23 +36,42 @@ export default function DataLogView(props: DataLogViewProps) {
   let [timeBegin, setTimeBegin] = createSignal(initTimeBegin);
   let [timeEnd, setTimeEnd] = createSignal(initTimeEnd);
 
-  // get model definition based on model id in data_log schema
-  const [model] = createResource(props.data_log, async (input) => {
-    return await read_model(resourceServer.get(api_id)!, { id: input.model_id })
+  // get data set definition based on set id in data_log schema
+  const [set] = createResource(props.data_log, async (input) => {
+    const set_id = input.sets?.find((item) => item.name == path.item)?.id;
+    return await read_set(resourceServer.get(api_id)!, { id: set_id ? set_id : "" })
       .catch((error) => {
         console.error(error);
         return null;
       });
   });
+  // get models corresponding data set definition
+  const [models] = createResource(set, async (input) => {
+    const model_ids = input.members.map(member => member.model_id);
+    return await list_model_by_ids(resourceServer.get(api_id)!, { ids: model_ids })
+      .catch((error) => {
+        console.error(error);
+        return null;
+      });
+  });
+  // get models configuration corresponding data set definition
+  const [model_config] = createResource(models, async (models) => {
+    return set()!.members.flatMap((member) => {
+      const model = models.find(model => model.id == member.model_id);
+      if (model) {
+        return model.configs.filter((_, index) => member.data_index.includes(index));
+      }
+      return [];
+    });
+  });
 
   // get data schema based on device id in data_log schema and time mode setting
   const [data, {refetch} ] = createResource(props.data_log, async (input) => {
-    const device_id = input.devices.find((item) => item.name == path.item)?.id;
+    const set_id = input.sets.find((item) => item.name == path.item)?.id;
     if (timeMode() == "live") {
       const tLater = new Date(Date.now() - timeLater());
-      return await list_data_by_range(resourceServer.get(api_id)!, {
-        device_id: device_id ? device_id : "",
-        model_id: input.model_id,
+      return await list_data_set_by_range(resourceServer.get(api_id)!, {
+        set_id: set_id ? set_id : "",
         begin: tLater,
         end: new Date(Date.now()),
         tag: null
@@ -63,9 +82,8 @@ export default function DataLogView(props: DataLogViewProps) {
       });
     }
     else if (timeMode() == "history") {
-      return await list_data_by_range(resourceServer.get(api_id)!, {
-        device_id: device_id ? device_id : "",
-        model_id: input.model_id,
+      return await list_data_set_by_range(resourceServer.get(api_id)!, {
+        set_id: set_id ? set_id : "",
         begin: timeBegin(),
         end: timeEnd(),
         tag: null
@@ -79,9 +97,9 @@ export default function DataLogView(props: DataLogViewProps) {
   });
 
   function columns(): TableColumns | undefined {
-    if (model()) {
-      const configs = model()!.configs;
-      const indexes = props.data_log.model_index;
+    if (model_config()) {
+      const configs = model_config()!;
+      const indexes = [...Array(configs.length).keys()];
       const cols: TableColumns = {
         ts: { content: "Timestamp", sortable: true, align: "left" }
       };
@@ -105,9 +123,9 @@ export default function DataLogView(props: DataLogViewProps) {
   }
 
   function dataTable(): TableRowData[] | undefined {
-    if (model() && data()) {
-      const configs = model()!.configs;
-      const indexes = props.data_log.model_index;
+    if (model_config() && data()) {
+      const configs = model_config()!;
+      const indexes = [...Array(configs.length).keys()];
       const dataTable: TableRowData[] = [];
       for (const dataschema of data()!) {
         const dataRow: TableRowData = {
@@ -127,9 +145,9 @@ export default function DataLogView(props: DataLogViewProps) {
   }
 
   function itemCharts() {
-    if (model()) {
-      const configs = model()!.configs;
-      const indexes = props.data_log.model_index;
+    if (model_config()) {
+      const configs = model_config()!;
+      const indexes = [...Array(configs.length).keys()];
       const items = [];
       for (const index in configs) {
         const i = parseInt(index);

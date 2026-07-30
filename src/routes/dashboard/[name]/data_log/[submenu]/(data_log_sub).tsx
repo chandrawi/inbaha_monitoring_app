@@ -44,16 +44,10 @@ export default function DataLogSub() {
     return [];
   };
 
-  const dataLogs = () => {
-    const s = schema() as DataLogSchema;
-    if (!s) return[];
-    return s.children;
-  };
-
   return (
     <Show when={schema()}>
       <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "data_log", text: "Data Log" }} children1={children1()} children2={children2()} child1={dashboardPath.submenu} child2={dashboardPath.item} />
-      <DataLogList path={dashboardPath} data_logs={dataLogs()} />
+      <DataLogList path={dashboardPath} data_log={schema()! as DataLogSchema} />
     </Show>
   );
 }

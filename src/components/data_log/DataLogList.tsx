@@ -1,11 +1,11 @@
 import { createSignal } from "solid-js";
 import { useSearchParams } from "@solidjs/router";
-import { DashboardPath, DataLogViewSchema, DatasetLogViewSchema } from "~/lib/definition";
+import { DashboardPath, DataLogSchema } from "~/lib/definition";
 import { DataTable, TableColumns, TableRowData } from "../table/DataTable";
 
 interface DataLogListProps {
   path: DashboardPath;
-  data_logs: (DataLogViewSchema | DatasetLogViewSchema)[];
+  data_log: DataLogSchema;
 };
 
 interface DataLogList {
@@ -23,9 +23,9 @@ export default function DataLogList(props: DataLogListProps) {
 
   const dataLogList = (): DataLogList[][] => {
     const list = [];
-    if (Array.isArray(props.data_logs)) {
-      for (const data_log of props.data_logs) {
-        if ("devices" in data_log) {
+    if (Array.isArray(props.data_log.children)) {
+      for (const data_log of props.data_log.children) {
+        if ("devices" in data_log && (data_log.name == props.path.submenu || !props.path.submenu)) {
           list.push(data_log.devices.flatMap((item) => { return {
             name: data_log.name,
             text: data_log.text,
@@ -33,7 +33,7 @@ export default function DataLogList(props: DataLogListProps) {
             item: item.name
           }}));
         }
-        if ("sets" in data_log) {
+        if ("sets" in data_log && (data_log.name == props.path.submenu || !props.path.submenu)) {
           list.push(data_log.sets.flatMap((item) => { return {
             name: data_log.name,
             text: data_log.text,
@@ -88,8 +88,8 @@ export default function DataLogList(props: DataLogListProps) {
       <div class="w-full max-w-3xl xs:rounded-sm border border-slate-200 dark:border-slate-700">
         <div class="w-full flex flex-row items-center justify-between bg-gray-100 dark:bg-gray-800">
           <div class="mx-3 my-1.5 flex flex-row items-center font-semibold">
-            <span class={"icon-list_square text-[1.5rem] align-middle"}></span>
-            <span class="ml-1.5 align-middle">&nbsp;</span>
+            <span class={(props.data_log.icon ? props.data_log.icon : "icon-list_square") + " text-[1.5rem] align-middle"}></span>
+            <span class="ml-1.5 align-middle">{props.data_log.text}&nbsp;</span>
           </div>
           <div class="mx-3 my-auto flex flex-row text-sm">
             <button class={"px-2 py-0.5 text-gray-100 rounded-l-sm " 

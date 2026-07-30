@@ -1,11 +1,12 @@
 import { useLocation } from "@solidjs/router";
-import { onMount, Show } from "solid-js";
+import { onMount, Match, Show, Switch } from "solid-js";
 import { getDashboardPath } from "~/lib/utility";
 import { useResource } from "~/context/ResourceContext";
 import { useDashboard } from "~/context/DashboardContext";
-import { DataLogSchema, DataLogViewSchema } from "~/lib/definition";
+import { DataLogSchema, DataLogViewSchema, DatasetLogViewSchema } from "~/lib/definition";
 import Breadcrumb from "~/components/navigation/Breadcrumb";
 import DataLogView from "~/components/data_log/DataLogView";
+import DataSetLogView from "~/components/data_log/DatasetLogView";
 
 export default function DataLogItem() {
   // get dashboard path based on URL
@@ -47,7 +48,7 @@ export default function DataLogItem() {
   const data_log = () => {
     const s = schema() as DataLogSchema;
     if (!s) return;
-    const c = s.children as DataLogViewSchema[];
+    const c = s.children as (DataLogViewSchema | DatasetLogViewSchema)[];
     if (Array.isArray(c)) {
       return c.find((item) => item.name == dashboardPath.submenu);
     }
@@ -57,7 +58,14 @@ export default function DataLogItem() {
     <Show when={schema()}>
       <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "data_log", text: "Data Log" }} children1={children1()} children2={children2()} child1={dashboardPath.submenu} child2={dashboardPath.item} />
       <Show when={resource() && data_log()}>
-        <DataLogView path={dashboardPath} resource={resource()!} data_log={data_log()!} />
+        <Switch>
+          <Match when={data_log()!.component == "data_log_view"}>
+            <DataLogView path={dashboardPath} resource={resource()!} data_log={data_log()! as DataLogViewSchema} />
+          </Match>
+          <Match when={data_log()!.component == "dataset_log_view"}>
+            <DataSetLogView path={dashboardPath} resource={resource()!} data_log={data_log()! as DatasetLogViewSchema} />
+          </Match>
+        </Switch>
       </Show>
     </Show>
   );

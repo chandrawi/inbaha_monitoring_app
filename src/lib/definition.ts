@@ -37,7 +37,7 @@ export type OverviewCardsSchema = BasicSchema & {
   config: {
     live_range: number;
     live_ranges: number[];
-    float_precission: { [key:string]: number }
+    float_precission: number[];
   };
 };
 
@@ -62,6 +62,7 @@ export type InformationSchema = BasicSchema & {
 };
 
 export type DataLogViewSchema = BasicSchema & {
+  component: string,
   model_id: string;
   model_index: number[];
   devices: {
@@ -73,12 +74,13 @@ export type DataLogViewSchema = BasicSchema & {
     live_range: number;
     view_mode: "table" | "graph";
     time_mode: "live" | "history";
-    float_precission?: number;
+    float_precission?: number[];
     chart_value_range?: number[][];
   };
 };
 
 export type DatasetLogViewSchema = BasicSchema & {
+  component: string,
   sets: {
     id: string;
     name: string;
@@ -88,7 +90,7 @@ export type DatasetLogViewSchema = BasicSchema & {
     live_range: number;
     view_mode: "table" | "graph";
     time_mode: "live" | "history";
-    float_precission?: number;
+    float_precission?: number[];
     chart_value_range?: number[][];
   };
 };

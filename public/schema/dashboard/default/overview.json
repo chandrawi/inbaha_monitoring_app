@@ -6,6 +6,6 @@
   "config": {
     "live_ranges": [1800000, 3600000, 14400000, 43200000, 86400000, 604800000, 2592000000],
     "live_range": 3600000,
-    "float_precission": {"Flow":4, "TSS":2, "pH":3, "COD":2, "NH3N":2}
+    "float_precission": [4, 2, 3, 2, 2]
   }
 }

@@ -99,6 +99,6 @@ export type DataLogSchema = {
   name: string;
   text: string;
   icon: string;
-  nested: boolean;
+  mode: "single" | "flat" | "nested";
   children: DataLogChildSchema[];
 };

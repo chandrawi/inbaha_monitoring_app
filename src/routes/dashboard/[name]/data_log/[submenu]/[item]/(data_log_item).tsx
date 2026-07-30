@@ -1,0 +1,64 @@
+import { useLocation } from "@solidjs/router";
+import { onMount, Show } from "solid-js";
+import { getDashboardPath } from "~/lib/utility";
+import { useResource } from "~/context/ResourceContext";
+import { useDashboard } from "~/context/DashboardContext";
+import { DataLogSchema, DataLogViewSchema } from "~/lib/definition";
+import Breadcrumb from "~/components/navigation/Breadcrumb";
+import DataLogView from "~/components/data_log/DataLogView";
+
+export default function DataLogItem() {
+  // get dashboard path based on URL
+  const location = useLocation();
+  const dashboardPath = getDashboardPath(location.pathname);
+  // get resource and dashboard schema context
+  const { resource, setName } = useResource();
+  const { schema, path, setPath } = useDashboard();
+  // update resource and dashboard schema using dashboard path
+  onMount(() => {
+    setName(dashboardPath.name);
+    const p = path();
+    if (p[0] != dashboardPath.name || p[1] != dashboardPath.menu) {
+      setPath([dashboardPath.name, dashboardPath.menu]);
+    }
+  });
+
+  const children1 = () => {
+    const s = schema() as DataLogSchema;
+    if (!s) return[];
+    return Array.isArray(s.children) ? s.children.flatMap((item) => { return { name: item.name, text: item.text } }) : [];
+  };
+  const children2 = () => {
+    const s = schema() as DataLogSchema;
+    if (!s) return[];
+    if (Array.isArray(s.children)) {
+      const v = s.children.find((item) => item.name == dashboardPath.submenu);
+      if (!v) return [];
+      if ("devices" in v) {
+        return v ? v.devices?.flatMap((item) => { return { name: item.name, text: item.name, parent: v.name } }): [];
+      }
+      if ("sets" in v) {
+        return v ? v.sets?.flatMap((item) => { return { name: item.name, text: item.name, parent: v.name } }): [];
+      }
+    }
+    return [];
+  };
+
+  const data_log = () => {
+    const s = schema() as DataLogSchema;
+    if (!s) return;
+    const c = s.children as DataLogViewSchema[];
+    if (Array.isArray(c)) {
+      return c.find((item) => item.name == dashboardPath.submenu);
+    }
+  };
+
+  return (
+    <Show when={schema()}>
+      <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "data_log", text: "Data Log" }} children1={children1()} children2={children2()} child1={dashboardPath.submenu} child2={dashboardPath.item} />
+      <Show when={resource() && data_log()}>
+        <DataLogView path={dashboardPath} resource={resource()!} data_log={data_log()!} />
+      </Show>
+    </Show>
+  );
+}

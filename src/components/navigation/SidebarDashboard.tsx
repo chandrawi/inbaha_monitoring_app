@@ -10,8 +10,13 @@ export default function SidebarDashboard() {
 
   // get menu schema of the dashboard
   const [dashboardMenu] = createResource<DashboardMenu[], string>(path.name, async (name) => {
-    const response = await fetch(`/schema/dashboard/${name}/menu.json`);
-    return await response.json();
+    try {
+      const response = await fetch(`/schema/dashboard/${name}/menu.json`);
+      return await response.json();
+    } catch(error) {
+      console.error(error);
+      return [];
+    }
   });
   const menuSchema = () => dashboardMenu() === undefined ? [] : dashboardMenu();
 

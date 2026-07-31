@@ -37,6 +37,7 @@ export default function DataLogView(props: DataLogViewProps) {
       return { data_log: dl, path: dp };
     }
   };
+  const deviceMeta = () => data_log()?.devices.find((item) => item.name == input()?.path.item);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const initViewMode = searchParams.view ? searchParams.view : config()?.view_mode;
@@ -227,8 +228,8 @@ export default function DataLogView(props: DataLogViewProps) {
         <div class="w-full max-w-3xl xs:rounded-sm border border-slate-200 dark:border-slate-700">
           <div class="w-full flex flex-row items-center justify-between bg-gray-100 dark:bg-gray-800">
             <div class="mx-2 my-1.5 flex flex-row items-center font-semibold">
-              <span class={(props.data_log.icon ? props.data_log.icon : "icon-list_square") + " text-[1.5rem] align-middle"}></span>
-              <span class="ml-1 align-middle">{props.data_log.name}&nbsp;</span>
+              <span class={(data_log()?.icon ? data_log()?.icon : "icon-list_square") + " text-[1.5rem] align-middle"}></span>
+              <span class="ml-1 align-middle">{data_log()?.name}&nbsp;</span>
             </div>
             <div class="mx-3 my-auto flex flex-row text-sm">
               <button class={"px-2 py-0.5 text-gray-100 rounded-l-sm " 
@@ -301,7 +302,7 @@ export default function DataLogView(props: DataLogViewProps) {
               <div class="xs:rounded-sm border border-slate-200 dark:border-slate-700">
                 <div class="flex flex-row items-center bg-gray-100 dark:bg-gray-800">
                   <div class="mx-3 my-1.5 flex flex-row items-center font-medium">
-                    <span class="align-middle text-sm">{props.data_log.name}&nbsp;</span>
+                    <span class="align-middle text-sm">{deviceMeta()?.name}&nbsp;</span>
                     <span class="icon-chevron_right align-middle text-[0.875rem]"></span>
                     <span class="align-middle text-sm">&nbsp;{item.content}</span>
                   </div>
@@ -321,7 +322,7 @@ export default function DataLogView(props: DataLogViewProps) {
           <div class="w-full max-w-3xl xs:rounded-sm border border-slate-200 dark:border-slate-700">
             <div class="flex flex-row items-center bg-gray-100 dark:bg-gray-800">
               <div class="mx-3 my-1.5 flex flex-row items-center font-medium">
-                <span class="align-middle text-sm leading-6">{props.data_log.name}&nbsp;</span>
+                <span class="align-middle text-sm leading-6">{deviceMeta()?.name}&nbsp;</span>
               </div>
             </div>
             <div class="w-full xs:px-4 py-2 bg-white dark:bg-gray-900 text-sm overflow-x-auto scrollbar-custom scrollbar-gutter-auto">

@@ -1,6 +1,7 @@
 import { useLocation } from "@solidjs/router";
 import { DEFAULT_DASHBOARD, DEFAULT_MENU } from "./store";
 import { DashboardPath, DataLogSchema, InformationSchema } from "./definition";
+import { onCleanup } from "solid-js";
 
 export function dashboardPath(): DashboardPath {
   const location = useLocation();
@@ -53,6 +54,19 @@ export function rangeName(range: number) {
   else if(range < 86400000) return String(range / 3600000) + " hours";
   else if(range == 86400000) return "1 day";
   else return String(range / 86400000) + " day(s)";
+}
+
+export function clickOutside(el: HTMLElement, accessor: () => () => void) {
+  const onClick = (e: MouseEvent) => {
+    // If the click happened outside the element, call the function
+    if (!el.contains(e.target as Node)) {
+      accessor()();
+    }
+  };
+  document.body.addEventListener("click", onClick);
+  onCleanup(() => {
+    document.body.removeEventListener("click", onClick);
+  });
 }
 
 export function breadcrumbInformation(s?: InformationSchema) {

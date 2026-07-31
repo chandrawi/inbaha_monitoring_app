@@ -1,6 +1,5 @@
 import { Show, For } from "solid-js";
-import { useLocation } from "@solidjs/router";
-import { DEFAULT_DASHBOARD, DEFAULT_MENU } from "~/lib/store";
+import { dashboardPath } from "~/lib/utility";
 import { DashboardMenu } from "~/lib/definition";
 
 interface PageMenuProps {
@@ -10,21 +9,12 @@ interface PageMenuProps {
 
 export default function PageMenu(props: PageMenuProps) {
 
-  function path() {
-    const path = useLocation().pathname.split("/");
-    return {
-      name: path[2] ? path[2] : DEFAULT_DASHBOARD,
-      menu: path[3] ? path[3] : DEFAULT_MENU,
-      submenu: path[4],
-      rest: path.splice(5)
-    }
-  }
+  const isActive = () => dashboardPath().menu === props.menu.name;
+  const isActiveSub = (name: string) => dashboardPath().submenu === name;
 
-  const isActive = () => path().menu === props.menu.name;
-  const isActiveSub = (name: string) => path().submenu === name;
-
-  const setLink = (menu: string, submenu: string | null = null) => {
-    return "/dashboard/" + [path().name, menu, submenu].join("/")
+  const setLink = (link: string, menu: string, submenu: string | null = null) => {
+    if (link != "") return "/dashboard/" + dashboardPath().name + link;
+    return "/dashboard/" + [dashboardPath().name, menu, submenu].join("/");
   };
 
   return (
@@ -33,7 +23,7 @@ export default function PageMenu(props: PageMenuProps) {
         ? "bg-slate-100 before:bg-sky-800 hover:bg-sky-50 text-black hover:text-sky-800 dark:bg-slate-700 dark:before:bg-sky-600 dark:hover:bg-gray-700 dark:text-slate-50 dark:hover:text-sky-300"
         : "bg-slate-50 before:bg-slate-200 hover:bg-sky-50 hover:text-sky-800 dark:bg-slate-800 dark:before:bg-slate-700 dark:hover:bg-gray-800 dark:hover:text-sky-300"
       )}>
-        <a href={setLink(props.menu.name)} class="w-full h-full pl-3 flex items-center">
+        <a href={setLink(props.menu.link, props.menu.name)} class="w-full h-full pl-3 flex items-center">
           <div class="h-full flex items-center grow">
             <span class={ props.menu.icon + " text-[1.5rem]" }></span>
             <span class="font-medium mx-2">{props.menu.text}</span>
@@ -51,7 +41,7 @@ export default function PageMenu(props: PageMenuProps) {
               ? "bg-slate-100 hover:bg-sky-50 before:bg-sky-700 text-black hover:text-sky-800 dark:bg-slate-700 dark:before:bg-sky-500 dark:hover:bg-gray-700 dark:text-slate-50 dark:hover:text-sky-300" 
               : "hover:bg-sky-50 hover:text-sky-800 dark:hover:text-sky-300 dark:hover:bg-gray-800"
             )}>
-              <a href={setLink(props.menu.name, item.name)} class="w-full h-full ml-2.5 flex flex-row items-center">
+              <a href={setLink(item.link, props.menu.name, item.name)} class="w-full h-full ml-2.5 flex flex-row items-center">
                 <span class="icon-list_square text-[1.25rem]"></span>
                 <span class="mx-2">{item.text}</span>
               </a>

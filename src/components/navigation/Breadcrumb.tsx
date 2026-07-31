@@ -1,5 +1,5 @@
-import { Show, For, createEffect } from "solid-js";
-import { dashboardPath } from "~/lib/utility";
+import { createSignal, Show, For } from "solid-js";
+import { dashboardPath, clickOutside } from "~/lib/utility";
 
 interface BreadcrumbSchema {
   name: string;
@@ -19,6 +19,12 @@ interface BreadcrumbProps {
   dashboard: string;
   schema: BreadcrumbSchema;
 };
+
+declare module "solid-js" {
+  interface Directives {
+    clickOutside: () => void;
+  }
+}
 
 export default function Breadcrumb(props: BreadcrumbProps) {
   const mode = () => props.mode ? props.mode : "nested";
@@ -70,6 +76,11 @@ export default function Breadcrumb(props: BreadcrumbProps) {
     return "/dashboard/" + [props.dashboard, ...activeSegments].join("/");
   };
 
+  // signals for controlling dropdown
+  const [dropdown1, setDropdown1] = createSignal(true);
+  const [dropdown2, setDropdown2] = createSignal(true);
+  const clickOutsideDirective = clickOutside;
+
   return (
     <div class="w-full px-2 pt-1.5 pb-2 flex flex-row items-center font-medium text-gray-800 dark:text-gray-200">
       <a href={setLink([parent().name])} class="hover:text-sky-800 dark:hover:text-sky-300">
@@ -79,12 +90,15 @@ export default function Breadcrumb(props: BreadcrumbProps) {
 
       <Show when={mode() == "nested"}>
         <Show when={children2().length} fallback={
-          <div class="dropdown min-w-24 h-full relative bg-sky-100 dark:bg-sky-950 text-sm rounded-sm">
-            <button tabindex="0" class="group w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300">
+          <div class="min-w-24 h-full relative bg-sky-100 dark:bg-sky-950 text-sm rounded-sm">
+            <button class="group w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300"
+              onclick={() => setDropdown1(!dropdown1())}
+              use:clickOutsideDirective={() => setDropdown1(true)}
+            >
               <span class="w-full text-center">{child1Text() ? child1Text() : "————"}</span>
               <span class="icon-arrow_fill_down text-[0.75rem] ml-1"></span>
             </button>
-            <div tabindex="0" class="dropdown-content min-w-full absolute flex flex-col justify-center bg-white shadow-md shadow-slate-200 dark:shadow-slate-950 dark:bg-slate-800">
+            <div classList={{ hidden: dropdown1() }} class="min-w-full absolute flex flex-col justify-center bg-white shadow-md shadow-slate-200 dark:shadow-slate-950 dark:bg-slate-800">
               <For each={children1()}>
               {(item) => (
                 <a href={setLink([parent().name, item.name])} class="w-full px-2 py-1 wrap-break-word hover:text-sky-800 border-t border-slate-200 border-dotted dark:hover:text-sky-300 dark:border-slate-700">
@@ -105,12 +119,16 @@ export default function Breadcrumb(props: BreadcrumbProps) {
       </Show>
 
       <Show when={(child1Text() || mode() != "nested") && children2().length}>
-        <div class="dropdown min-w-24 h-full relative bg-sky-100 dark:bg-sky-950 text-sm rounded-sm">
-          <button tabindex="0" class="group w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300">
+        <div class="min-w-24 h-full relative bg-sky-100 dark:bg-sky-950 text-sm rounded-sm">
+          <button 
+            class="group w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300"
+            onclick={() => setDropdown2(!dropdown2())}
+            use:clickOutsideDirective={() => setDropdown2(true)}
+          >
             <span class="w-full text-center">{child2Text() ? child2Text() : "————"}</span>
             <span class="icon-arrow_fill_down text-[0.75rem] ml-1"></span>
           </button>
-          <div tabindex="0" class="dropdown-content min-w-full absolute flex flex-col justify-center bg-white shadow-md shadow-slate-200 dark:shadow-slate-950 dark:bg-slate-800">
+          <div classList={{ hidden: dropdown2() }} class="min-w-full absolute flex flex-col justify-center bg-white shadow-md shadow-slate-200 dark:shadow-slate-950 dark:bg-slate-800">
             <For each={children2()}>
             {(item) => (
               <a href={setLink([parent().name, item?.parent, item?.name])} class="w-full px-2 py-1 wrap-break-word hover:text-sky-800 border-t border-slate-200 border-dotted dark:hover:text-sky-300 dark:border-slate-700">

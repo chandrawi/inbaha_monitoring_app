@@ -39,28 +39,28 @@
   "name": "sensor_a",
   "text": "Sensor A",
   "icon": "icon-list_square",
-  "link": ""
+  "link": "/data_log/sensor_a/sensor_a_1"
 }, {
   "id": 6,
   "parent_id": 4,
   "name": "sensor_b",
   "text": "Sensor B",
   "icon": "icon-list_square",
-  "link": ""
+  "link": "/data_log/sensor_b/sensor_b_1"
 }, {
   "id": 7,
   "parent_id": 4,
   "name": "sensor_c",
   "text": "Sensor C",
   "icon": "icon-list_square",
-  "link": ""
+  "link": "/data_log/sensor_c/sensor_c_1"
 }, {
   "id": 8,
   "parent_id": 4,
   "name": "power_monitor",
   "text": "Power Monitor",
   "icon": "icon-list_square",
-  "link": ""
+  "link": "/data_log/power_monitor/power_monitor"
 }, {
   "id": 9,
   "parent_id": 9,

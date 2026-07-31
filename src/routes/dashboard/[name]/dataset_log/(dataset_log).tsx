@@ -1,7 +1,6 @@
-import { useLocation } from "@solidjs/router";
 import { Match, onMount, Show, Switch } from "solid-js";
 import { DataLogSchema, DataLogViewSchema, DatasetLogViewSchema } from "~/lib/definition";
-import { getDashboardPath } from "~/lib/utility";
+import { dashboardPath } from "~/lib/utility";
 import { useResource } from "~/context/ResourceContext";
 import { useDashboard } from "~/context/DashboardContext";
 import Breadcrumb from "~/components/navigation/Breadcrumb";
@@ -10,18 +9,16 @@ import DataLogView from "~/components/data_log/DataLogView";
 import DataSetLogView from "~/components/data_log/DatasetLogView";
 
 export default function DatasetLog() {
-  // get dashboard path based on URL
-  const location = useLocation();
-  const dashboardPath = getDashboardPath(location.pathname);
   // get resource and dashboard schema context
   const { resource, setName } = useResource();
-  const { schema, path, setPath } = useDashboard();
+  const { schema, menuPath, setMenuPath } = useDashboard();
   // update resource and dashboard schema using dashboard path
+  const path = dashboardPath();
   onMount(() => {
-    setName(dashboardPath.name);
-    const p = path();
-    if (p[0] != dashboardPath.name || p[1] != dashboardPath.menu) {
-      setPath([dashboardPath.name, dashboardPath.menu]);
+    setName(path.name);
+    const p = menuPath();
+    if (p[0] != path.name || p[1] != path.menu) {
+      setMenuPath([path.name, path.menu]);
     }
   });
 
@@ -39,7 +36,7 @@ export default function DatasetLog() {
     const s = schema() as DataLogSchema;
     if (!s) return[];
     if (Array.isArray(s.children)) {
-      const v = s.children.find((item) => item.name == dashboardPath.submenu);
+      const v = s.children.find((item) => item.name == path.submenu);
       if (!v) return [];
       if ("devices" in v) {
         return v ? v.devices?.flatMap((item) => { return { name: item.name, text: item.name, parent: v.name } }): [];
@@ -60,17 +57,17 @@ export default function DatasetLog() {
 
   return (
     <Show when={schema()}>
-      <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "dataset_log", text: "Data Set" }} children1={children1()} children2={children2()} child1={dashboardPath.submenu} child2={dashboardPath.item} />
+      <Breadcrumb dashboard={path.name} parent={{ name: "dataset_log", text: "Data Set" }} children1={children1()} children2={children2()} child1={path.submenu} child2={path.item} />
       <Show when={mode() == "single"} fallback={
-        <DataLogList path={dashboardPath} data_log={schema()! as DataLogSchema} />
+        <DataLogList data_log={schema()! as DataLogSchema} />
       }>
         <Show when={resource() && data_log()}>
           <Switch>
             <Match when={data_log()!.component == "data_log_view"}>
-              <DataLogView path={dashboardPath} resource={resource()!} data_log={data_log()! as DataLogViewSchema} />
+              <DataLogView path={path} resource={resource()!} data_log={data_log()! as DataLogViewSchema} />
             </Match>
             <Match when={data_log()!.component == "dataset_log_view"}>
-              <DataSetLogView path={dashboardPath} resource={resource()!} data_log={data_log()! as DatasetLogViewSchema} />
+              <DataSetLogView path={path} resource={resource()!} data_log={data_log()! as DatasetLogViewSchema} />
             </Match>
           </Switch>
         </Show>

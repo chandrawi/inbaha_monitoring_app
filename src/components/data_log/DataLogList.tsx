@@ -1,10 +1,10 @@
 import { createSignal } from "solid-js";
 import { useSearchParams } from "@solidjs/router";
-import { DashboardPath, DataLogSchema } from "~/lib/definition";
+import { DataLogSchema } from "~/lib/definition";
+import { dashboardPath } from "~/lib/utility";
 import { DataTable, TableColumns, TableRowData } from "../table/DataTable";
 
 interface DataLogListProps {
-  path: DashboardPath;
   data_log: DataLogSchema;
 };
 
@@ -25,7 +25,7 @@ export default function DataLogList(props: DataLogListProps) {
     const list = [];
     if (Array.isArray(props.data_log.children)) {
       for (const data_log of props.data_log.children) {
-        if ("devices" in data_log && (data_log.name == props.path.submenu || !props.path.submenu)) {
+        if ("devices" in data_log && (data_log.name == dashboardPath().submenu || !dashboardPath().submenu)) {
           list.push(data_log.devices.flatMap((item) => { return {
             name: data_log.name,
             text: data_log.text,
@@ -33,7 +33,7 @@ export default function DataLogList(props: DataLogListProps) {
             item: item.name
           }}));
         }
-        if ("sets" in data_log && (data_log.name == props.path.submenu || !props.path.submenu)) {
+        if ("sets" in data_log && (data_log.name == dashboardPath().submenu || !dashboardPath().submenu)) {
           list.push(data_log.sets.flatMap((item) => { return {
             name: data_log.name,
             text: data_log.text,
@@ -66,7 +66,7 @@ export default function DataLogList(props: DataLogListProps) {
     for (const items of dataLogList()) {
       for (const item of items) {
         const dataRow = {
-          __link__: "/dashboard/" + [props.path.name, props.path.menu, item.name, item.item].join("/"),
+          __link__: "/dashboard/" + [dashboardPath().name, dashboardPath().menu, item.name, item.item].join("/"),
           type: cell_type(item.text, item.icon),
           name: item.item
         };

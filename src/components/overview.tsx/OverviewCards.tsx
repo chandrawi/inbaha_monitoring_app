@@ -166,7 +166,7 @@ export default function OverviewCards(props: OverviewCardsProps) {
               <div class="xs:rounded-sm border border-slate-200 dark:border-slate-700">
                 <div class="flex flex-row justify-center items-center bg-gray-100 dark:bg-gray-800">
                   <div class="mx-3 my-2 flex flex-row items-center font-medium">
-                    <span class="align-middle text-md font-semibold">{String(item.scale)}&nbsp;</span>
+                    <span class="align-middle text-md font-semibold text-sky-900 dark:text-sky-200">{String(item.scale)}&nbsp;</span>
                   </div>
                 </div>
                 <div class="flex flex-row justify-center pt-5 pb-4 bg-white dark:bg-gray-900">

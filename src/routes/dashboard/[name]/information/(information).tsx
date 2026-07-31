@@ -1,22 +1,19 @@
-import { useLocation } from "@solidjs/router";
 import { onMount, Match, Show, Switch } from "solid-js";
 import { InformationSchema } from "~/lib/definition";
-import { getDashboardPath } from "~/lib/utility";
+import { dashboardPath } from "~/lib/utility";
 import { useDashboard } from "~/context/DashboardContext";
 import DescriptionDefault from "~/components/information/DescriptionDefault";
 import Breadcrumb from "~/components/navigation/Breadcrumb";
 
 export default function Information() {
-  // get dashboard path based on URL
-  const location = useLocation();
-  const dashboardPath = getDashboardPath(location.pathname);
   // get dashboard schema context
-  const { schema, path, setPath } = useDashboard();
+  const { schema, menuPath, setMenuPath } = useDashboard();
   // update dashboard schema using dashboard path
+  const path = dashboardPath();
   onMount(() => {
-    const p = path();
-    if (p[0] != dashboardPath.name || p[1] != dashboardPath.menu) {
-      setPath([dashboardPath.name, dashboardPath.menu]);
+    const p = menuPath();
+    if (p[0] != path.name || p[1] != path.menu) {
+      setMenuPath([path.name, path.menu]);
     }
   });
 
@@ -33,7 +30,7 @@ export default function Information() {
 
   return(
     <Show when={component()}>
-      <Breadcrumb dashboard={dashboardPath.name} parent={{ name: "information", text: "Information" }} children1={children1()} children2={[]} child1={dashboardPath.submenu} child2="" />
+      <Breadcrumb dashboard={path.name} parent={{ name: "information", text: "Information" }} children1={children1()} children2={[]} child1={path.submenu} child2="" />
       <Switch>
         <Match when={component() == "description_default"}>
           <DescriptionDefault />

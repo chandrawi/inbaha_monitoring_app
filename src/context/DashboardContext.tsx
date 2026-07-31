@@ -5,17 +5,17 @@ type DashboardSchema = OverviewSchema | InformationSchema | DataLogSchema | null
 
 interface DashboardContextType {
   schema: Resource<DashboardSchema>;
-  path: Accessor<[string, string]>;
-  setPath: Setter<[string, string]>;
+  menuPath: Accessor<[string, string]>;
+  setMenuPath: Setter<[string, string]>;
 };
 
 const DashboardContext = createContext<DashboardContextType>();
 
 export function DashboardProvider(props: {children: JSX.Element}) {
-  const [path, setPath] = createSignal<[string, string]>(["", ""]);
+  const [menuPath, setMenuPath] = createSignal<[string, string]>(["", ""]);
 
   // get a dashboard page schema based on the dashboard name and menu
-  const [schema] = createResource<DashboardSchema, [string, string]>(path, async ([name, menu]) => {
+  const [schema] = createResource<DashboardSchema, [string, string]>(menuPath, async ([name, menu]) => {
     if (name === "" || menu === "") return {};
     try {
       const response = await fetch(`/schema/dashboard/${name}/${menu}.json`);
@@ -27,7 +27,7 @@ export function DashboardProvider(props: {children: JSX.Element}) {
   });
 
   return (
-    <DashboardContext.Provider value={{ schema, path, setPath }}>
+    <DashboardContext.Provider value={{ schema, menuPath, setMenuPath }}>
       {props.children}
     </DashboardContext.Provider>
   );

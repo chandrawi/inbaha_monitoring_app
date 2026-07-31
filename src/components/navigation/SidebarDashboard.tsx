@@ -1,17 +1,15 @@
 import { createResource, For, Show } from "solid-js";
-import { useLocation } from "@solidjs/router";
 import { DashboardMenu } from "~/lib/definition";
-import { getDashboardPath } from "~/lib/utility";
+import { dashboardPath } from "~/lib/utility";
 import PageMenu from "./PageMenu";
 import PortalMenu from "./PortalMenu";
 
 export default function SidebarDashboard() {
   // get dashboard path based on URL
-  const location = useLocation();
-  const dashboardPath = getDashboardPath(location.pathname);
+  const path = dashboardPath();
 
   // get menu schema of the dashboard
-  const [dashboardMenu] = createResource<DashboardMenu[], string>(dashboardPath.name, async (name) => {
+  const [dashboardMenu] = createResource<DashboardMenu[], string>(path.name, async (name) => {
     const response = await fetch(`/schema/dashboard/${name}/menu.json`);
     return await response.json();
   });

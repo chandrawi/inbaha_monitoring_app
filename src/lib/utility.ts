@@ -1,8 +1,10 @@
+import { useLocation } from "@solidjs/router";
 import { DEFAULT_DASHBOARD, DEFAULT_MENU } from "./store";
 import { DashboardPath } from "./definition";
 
-export function getDashboardPath(pathname: string): DashboardPath {
-  const s = pathname.split("/");
+export function dashboardPath(): DashboardPath {
+  const location = useLocation();
+  const s = location.pathname.split("/");
   const name = s[2] ? s[2] : DEFAULT_DASHBOARD;
   const menu = s[3] ? s[3] : DEFAULT_MENU;
   const submenu = s[4] ? s[4] : "";

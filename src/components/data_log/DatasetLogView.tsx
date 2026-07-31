@@ -2,30 +2,48 @@ import { useSearchParams } from "@solidjs/router";
 import { createEffect, createResource, createSignal, For, Show } from "solid-js";
 import { list_data_set_by_range, list_model_by_ids, read_set } from "bbthings_grpc/resource";
 import { resourceServer } from "~/lib/store";
-import { dateToString, rangeName } from "~/lib/utility";
-import { DashboardPath, ResourceSchema, DatasetLogViewSchema } from "~/lib/definition";
+import { dashboardPath, dateToString, rangeName } from "~/lib/utility";
+import { ResourceSchema, DataLogSchema, DatasetLogViewSchema } from "~/lib/definition";
 import { DataTable, TableColumns, TableRowData } from "~/components/table/DataTable";
 
 interface DatasetLogViewProps {
-  path: DashboardPath;
   resource: ResourceSchema;
-  data_log: DatasetLogViewSchema;
+  data_log: DataLogSchema;
 };
 
 export default function DataSetLogView(props: DatasetLogViewProps) {
-  const config = props.data_log.config;
   const api_id = props.resource.api_id;
-  const path = props.path;
-  if (!path.item && props.data_log.sets.length) {
-    path.item = props.data_log.sets[0].name;
-  }
+
+  // take a data_log child schema matched with submenu path or first child for single mode
+  const data_log = () => {
+    const dp = dashboardPath();
+    if (Array.isArray(props.data_log.children)) {
+      const c = props.data_log.children.find((item) => item.name == dp.submenu);
+      if (!c && props.data_log.children.length) {
+        return props.data_log.children[0] as DatasetLogViewSchema;
+      }
+      return c as DatasetLogViewSchema;
+    };
+  };
+  const config = () => data_log()?.config;
+  // construct resource input object using data_log schema and dashboard path
+  const input = () => {
+    const dp = dashboardPath();
+    const dl = data_log();
+    if (dl) {
+      if (!dp.item && dl?.sets.length) {
+        dp.item = dl.sets[0].name;
+      }
+      return { data_log: dl, path: dp };
+    }
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const initViewMode = searchParams.view ? searchParams.view : config.view_mode;
-  const initTimeMode = searchParams.time ? searchParams.time : config.time_mode;
+  const initViewMode = searchParams.view ? searchParams.view : config()?.view_mode;
+  const initTimeMode = searchParams.time ? searchParams.time : config()?.time_mode;
   const initTimeLater= typeof searchParams.later === "string" 
     ? parseInt(searchParams.later) 
-    : config.live_range;
+    :  (config() ? config()!.live_range : 300);
   const initTimeBegin = typeof searchParams.begin === "string" && new Date(searchParams.begin) < new Date() 
     ? new Date(searchParams.begin) 
     : new Date(Date.now() - initTimeLater);
@@ -40,8 +58,8 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
   let [timeEnd, setTimeEnd] = createSignal(initTimeEnd);
 
   // get data set definition based on set id in data_log schema
-  const [set] = createResource(props.data_log, async (input) => {
-    const set_id = input.sets?.find((item) => item.name == path.item)?.id;
+  const [set] = createResource(input, async (input) => {
+    const set_id = input.data_log.sets?.find((item) => item.name == input.path.item)?.id;
     return await read_set(resourceServer.get(api_id)!, { id: set_id ? set_id : "" })
       .catch((error) => {
         console.error(error);
@@ -69,8 +87,8 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
   });
 
   // get data schema based on device id in data_log schema and time mode setting
-  const [data, {refetch} ] = createResource(props.data_log, async (input) => {
-    const set_id = input.sets.find((item) => item.name == path.item)?.id;
+  const [data, {refetch} ] = createResource(input, async (input) => {
+    const set_id = input.data_log.sets.find((item) => item.name == input.path.item)?.id;
     if (timeMode() == "live") {
       const tLater = new Date(Date.now() - timeLater());
       return await list_data_set_by_range(resourceServer.get(api_id)!, {
@@ -100,7 +118,7 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
   });
 
   function columns(): TableColumns | undefined {
-    if (model_config()) {
+    if (data_log() && model_config()) {
       const configs = model_config()!;
       const indexes = [...Array(configs.length).keys()];
       const cols: TableColumns = {
@@ -111,13 +129,11 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
         if (indexes.includes(i)) {
           const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
           const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_, conf) => conf).value;
-          const precission = Array.isArray(config.float_precission)
-            ? typeof config.float_precission[i] == "number" ? config.float_precission[i] : undefined
-            : undefined;
+          const pre = config()?.float_precission;
           cols[String(scale)] = {
             content: scale + " [" + symbol + "]",
             sortable: true,
-            float_precission: precission
+            float_precission: pre ? pre[i] : undefined
           }
         }
       }
@@ -126,7 +142,7 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
   }
 
   function dataTable(): TableRowData[] | undefined {
-    if (model_config() && data()) {
+    if (data_log() && model_config() && data()) {
       const configs = model_config()!;
       const indexes = [...Array(configs.length).keys()];
       const dataTable: TableRowData[] = [];
@@ -148,7 +164,7 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
   }
 
   function itemCharts() {
-    if (model_config()) {
+    if (data_log() && model_config()) {
       const configs = model_config()!;
       const indexes = [...Array(configs.length).keys()];
       const items = [];
@@ -158,10 +174,11 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
         if (indexes.includes(i)) {
           const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
           const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_, conf) => conf).value;
+          const cvr = config()?.chart_value_range;
           items.push({
             scale: String(scale),
             content: scale + " [" + symbol + "]",
-            range: config.chart_value_range ? config.chart_value_range[indexOfIndexes] : undefined
+            range: cvr ? cvr[indexOfIndexes] : undefined
           })
         }
       }
@@ -218,8 +235,8 @@ export default function DataSetLogView(props: DatasetLogViewProps) {
 
   const [rangeList, setRangeList] = createSignal([300000, 900000, 1800000, 3600000]);
   createEffect(() => {
-    if (Array.isArray(config.live_ranges)) setRangeList(config.live_ranges);
-    if (config.live_range) selectRange.value = typeof searchParams.later == "string" ? searchParams.later : String(config.live_range);
+    if (Array.isArray(config()?.live_ranges)) setRangeList(config()!.live_ranges);
+    if (config()?.live_range) selectRange.value = typeof searchParams.later == "string" ? searchParams.later : String(config()!.live_range);
   });
 
   return (

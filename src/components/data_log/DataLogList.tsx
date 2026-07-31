@@ -5,6 +5,7 @@ import { dashboardPath } from "~/lib/utility";
 import { DataTable, TableColumns, TableRowData } from "../table/DataTable";
 
 interface DataLogListProps {
+  mode?: "single" | "flat" | "nested";
   data_log: DataLogSchema;
 };
 
@@ -16,6 +17,7 @@ interface DataLogList {
 };
 
 export default function DataLogList(props: DataLogListProps) {
+  const mode = () => props.mode ? props.mode : "nested";
   const [searchParams, setSearchParams] = useSearchParams();
   const initViewMode = searchParams.view ? searchParams.view : "table";
 
@@ -25,7 +27,7 @@ export default function DataLogList(props: DataLogListProps) {
     const list = [];
     if (Array.isArray(props.data_log.children)) {
       for (const data_log of props.data_log.children) {
-        if ("devices" in data_log && (data_log.name == dashboardPath().submenu || !dashboardPath().submenu)) {
+        if ("devices" in data_log && (data_log.name == dashboardPath().submenu || !dashboardPath().submenu || mode() != "nested")) {
           list.push(data_log.devices.flatMap((item) => { return {
             name: data_log.name,
             text: data_log.text,
@@ -33,7 +35,7 @@ export default function DataLogList(props: DataLogListProps) {
             item: item.name
           }}));
         }
-        if ("sets" in data_log && (data_log.name == dashboardPath().submenu || !dashboardPath().submenu)) {
+        if ("sets" in data_log && (data_log.name == dashboardPath().submenu || !dashboardPath().submenu || mode() != "nested")) {
           list.push(data_log.sets.flatMap((item) => { return {
             name: data_log.name,
             text: data_log.text,

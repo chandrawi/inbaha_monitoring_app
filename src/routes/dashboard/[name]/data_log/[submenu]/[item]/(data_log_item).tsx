@@ -1,5 +1,5 @@
 import { onMount, Match, Show, Switch } from "solid-js";
-import { DataLogSchema, DataLogViewSchema, DatasetLogViewSchema } from "~/lib/definition";
+import { DataLogSchema } from "~/lib/definition";
 import { dashboardPath, breadcrumbDataLog } from "~/lib/utility";
 import { useResource } from "~/context/ResourceContext";
 import { useDashboard } from "~/context/DashboardContext";
@@ -22,13 +22,14 @@ export default function DataLogItem() {
   });
 
   const mode = () => (schema() as DataLogSchema).mode;
-  // take a dashboard schema child matched with submenu path
-  const data_log = () => {
+  const component = () => {
     const s = schema() as DataLogSchema;
-    if (!s) return;
-    const c = s.children as (DataLogViewSchema | DatasetLogViewSchema)[];
-    if (Array.isArray(c)) {
-      return c.find((item) => item.name == path.submenu);
+    if (Array.isArray(s?.children)) {
+      const c = s?.children.find((item) => item.name == path.submenu);
+      if (c) {
+        if ("devices" in c) return "devices";
+        if ("sets" in c) return "sets";
+      }
     }
   };
   // transform dashboard schema to breadcrumb schema
@@ -39,13 +40,13 @@ export default function DataLogItem() {
       <Show when={breadcrumb()}>
         <Breadcrumb mode={mode()} dashboard={path.name} schema={breadcrumb()!} />
       </Show>
-      <Show when={resource() && data_log()}>
+      <Show when={resource() && component()}>
         <Switch>
-          <Match when={data_log()!.component == "data_log_view"}>
-            <DataLogView path={path} resource={resource()!} data_log={data_log()! as DataLogViewSchema} />
+          <Match when={component() == "devices"}>
+            <DataLogView resource={resource()!} data_log={schema()! as DataLogSchema} />
           </Match>
-          <Match when={data_log()!.component == "dataset_log_view"}>
-            <DataSetLogView path={path} resource={resource()!} data_log={data_log()! as DatasetLogViewSchema} />
+          <Match when={component() == "sets"}>
+            <DataSetLogView resource={resource()!} data_log={schema()! as DataLogSchema} />
           </Match>
         </Switch>
       </Show>

@@ -2,30 +2,48 @@ import { useSearchParams } from "@solidjs/router";
 import { createEffect, createResource, createSignal, For, Show } from "solid-js";
 import { list_data_by_range, read_model } from "bbthings_grpc/resource";
 import { resourceServer } from "~/lib/store";
-import { dateToString, rangeName } from "~/lib/utility";
-import { DashboardPath, ResourceSchema, DataLogViewSchema } from "~/lib/definition";
+import { dashboardPath, dateToString, rangeName } from "~/lib/utility";
+import { ResourceSchema, DataLogSchema, DataLogViewSchema } from "~/lib/definition";
 import { DataTable, TableColumns, TableRowData } from "~/components/table/DataTable";
 
 interface DataLogViewProps {
-  path: DashboardPath;
   resource: ResourceSchema;
-  data_log: DataLogViewSchema;
+  data_log: DataLogSchema;
 };
 
 export default function DataLogView(props: DataLogViewProps) {
-  const config = props.data_log.config;
   const api_id = props.resource.api_id;
-  const path = props.path;
-  if (!path.item && props.data_log.devices.length) {
-    path.item = props.data_log.devices[0].name;
-  }
+
+  // take a data_log child schema matched with submenu path or first child for single mode
+  const data_log = () => {
+    const dp = dashboardPath();
+    if (Array.isArray(props.data_log.children)) {
+      const c = props.data_log.children.find((item) => item.name == dp.submenu);
+      if (!c && props.data_log.children.length) {
+        return props.data_log.children[0] as DataLogViewSchema;
+      }
+      return c as DataLogViewSchema;
+    };
+  };
+  const config = () => data_log()?.config;
+  // construct resource input object using data_log schema and dashboard path
+  const input = () => {
+    const dp = dashboardPath();
+    const dl = data_log();
+    if (dl) {
+      if (!dp.item && dl?.devices.length) {
+        dp.item = dl.devices[0].name;
+      }
+      return { data_log: dl, path: dp };
+    }
+  };
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const initViewMode = searchParams.view ? searchParams.view : config.view_mode;
-  const initTimeMode = searchParams.time ? searchParams.time : config.time_mode;
+  const initViewMode = searchParams.view ? searchParams.view : config()?.view_mode;
+  const initTimeMode = searchParams.time ? searchParams.time : config()?.time_mode;
   const initTimeLater= typeof searchParams.later === "string" 
     ? parseInt(searchParams.later) 
-    : config.live_range;
+    : (config() ? config()!.live_range : 300);
   const initTimeBegin = typeof searchParams.begin === "string" && new Date(searchParams.begin) < new Date() 
     ? new Date(searchParams.begin) 
     : new Date(Date.now() - initTimeLater);
@@ -40,8 +58,8 @@ export default function DataLogView(props: DataLogViewProps) {
   let [timeEnd, setTimeEnd] = createSignal(initTimeEnd);
 
   // get model definition based on model id in data_log schema
-  const [model] = createResource(props.data_log, async (input) => {
-    return await read_model(resourceServer.get(api_id)!, { id: input.model_id })
+  const [model] = createResource(input, async (input) => {
+    return await read_model(resourceServer.get(api_id)!, { id: input.data_log.model_id })
       .catch((error) => {
         console.error(error);
         return null;
@@ -49,13 +67,13 @@ export default function DataLogView(props: DataLogViewProps) {
   });
 
   // get data schema based on device id in data_log schema and time mode setting
-  const [data, {refetch} ] = createResource(props.data_log, async (input) => {
-    const device_id = input.devices.find((item) => item.name == path.item)?.id;
+  const [data, {refetch} ] = createResource(input, async (input) => {
+    const device_id = input.data_log.devices.find((item) => item.name == input.path.item)?.id;
     if (timeMode() == "live") {
       const tLater = new Date(Date.now() - timeLater());
       return await list_data_by_range(resourceServer.get(api_id)!, {
         device_id: device_id ? device_id : "",
-        model_id: input.model_id,
+        model_id: input.data_log.model_id,
         begin: tLater,
         end: new Date(Date.now()),
         tag: null
@@ -68,7 +86,7 @@ export default function DataLogView(props: DataLogViewProps) {
     else if (timeMode() == "history") {
       return await list_data_by_range(resourceServer.get(api_id)!, {
         device_id: device_id ? device_id : "",
-        model_id: input.model_id,
+        model_id: input.data_log.model_id,
         begin: timeBegin(),
         end: timeEnd(),
         tag: null
@@ -82,9 +100,9 @@ export default function DataLogView(props: DataLogViewProps) {
   });
 
   function columns(): TableColumns | undefined {
-    if (model()) {
+    if (data_log() && model()) {
       const configs = model()!.configs;
-      const indexes = props.data_log.model_index;
+      const indexes = data_log()!.model_index;
       const cols: TableColumns = {
         ts: { content: "Timestamp", sortable: true, align: "left" }
       };
@@ -93,13 +111,11 @@ export default function DataLogView(props: DataLogViewProps) {
         if (indexes.includes(i)) {
           const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
           const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_, conf) => conf).value;
-          const precission = Array.isArray(config.float_precission)
-            ? typeof config.float_precission[i] == "number" ? config.float_precission[i] : undefined
-            : undefined;
+          const pre = config()?.float_precission;
           cols[String(scale)] = {
             content: scale + " [" + symbol + "]",
             sortable: true,
-            float_precission: precission
+            float_precission: pre ? pre[i] : undefined
           }
         }
       }
@@ -108,9 +124,9 @@ export default function DataLogView(props: DataLogViewProps) {
   }
 
   function dataTable(): TableRowData[] | undefined {
-    if (model() && data()) {
+    if (data_log() && model() && data()) {
       const configs = model()!.configs;
-      const indexes = props.data_log.model_index;
+      const indexes = data_log()!.model_index;
       const dataTable: TableRowData[] = [];
       for (const dataschema of data()!) {
         const dataRow: TableRowData = {
@@ -130,9 +146,9 @@ export default function DataLogView(props: DataLogViewProps) {
   }
 
   function itemCharts() {
-    if (model()) {
+    if (data_log() && model()) {
       const configs = model()!.configs;
-      const indexes = props.data_log.model_index;
+      const indexes = data_log()!.model_index;
       const items = [];
       for (const index in configs) {
         const i = parseInt(index);
@@ -140,10 +156,11 @@ export default function DataLogView(props: DataLogViewProps) {
         if (indexes.includes(i)) {
           const scale = configs[i].filter((conf) => conf.name == "scale").reduce((_, conf) => conf).value;
           const symbol = configs[i].filter((conf) => conf.name == "symbol").reduce((_, conf) => conf).value;
+          const cvr = config()?.chart_value_range;
           items.push({
             scale: String(scale),
             content: scale + " [" + symbol + "]",
-            range: config.chart_value_range ? config.chart_value_range[indexOfIndexes] : undefined
+            range: cvr ? cvr[indexOfIndexes] : undefined
           })
         }
       }
@@ -200,8 +217,8 @@ export default function DataLogView(props: DataLogViewProps) {
 
   const [rangeList, setRangeList] = createSignal([300000, 900000, 1800000, 3600000]);
   createEffect(() => {
-    if (Array.isArray(config.live_ranges)) setRangeList(config.live_ranges);
-    if (config.live_range) selectRange.value = typeof searchParams.later == "string" ? searchParams.later : String(config.live_range);
+    if (Array.isArray(config()?.live_ranges)) setRangeList(config()!.live_ranges);
+    if (config()?.live_range) selectRange.value = typeof searchParams.later == "string" ? searchParams.later : String(config()!.live_range);
   });
 
   return (

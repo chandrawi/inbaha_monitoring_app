@@ -1,6 +1,6 @@
 {
-  "name": "description",
-  "text": "Description",
+  "name": "information",
+  "text": "Information",
   "icon": "icon-list_square",
   "children": [
     {

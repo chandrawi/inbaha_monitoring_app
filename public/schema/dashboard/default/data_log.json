@@ -2,7 +2,7 @@
   "name": "data_log",
   "text": "Data Log",
   "icon": "icon-data",
-  "mode": "nested",
+  "mode": "flat",
   "children": [
     {
       "name": "sensor_a",

@@ -1,6 +1,6 @@
 import { useLocation } from "@solidjs/router";
 import { DEFAULT_DASHBOARD, DEFAULT_MENU } from "./store";
-import { DashboardPath } from "./definition";
+import { DashboardPath, DataLogSchema, InformationSchema } from "./definition";
 
 export function dashboardPath(): DashboardPath {
   const location = useLocation();
@@ -53,4 +53,54 @@ export function rangeName(range: number) {
   else if(range < 86400000) return String(range / 3600000) + " hours";
   else if(range == 86400000) return "1 day";
   else return String(range / 86400000) + " day(s)";
+}
+
+export function breadcrumbInformation(s?: InformationSchema) {
+  if (!s) return undefined;
+  const children1 = [];
+  if (Array.isArray(s.children)) {
+    for (const item1 of s.children) {
+      children1.push({
+        name: item1.name,
+        text: item1.text
+      });
+    }
+  }
+  return {
+    name: s.name,
+    text: s.text,
+    children: children1
+  };
+}
+
+export function breadcrumbDataLog(s?: DataLogSchema) {
+  if (!s) return undefined;
+  const children1 = [];
+  if (Array.isArray(s.children)) {
+    for (const item1 of s.children) {
+      let subItems: { name: string; }[] = [];
+      if ("devices" in item1 && Array.isArray(item1.devices)) {
+        subItems = item1.devices;
+      } else if ("sets" in item1 && Array.isArray(item1.sets)) {
+        subItems = item1.sets;
+      }
+      const children2 = [];
+      for (const childItem of subItems) {
+        children2.push({
+          name: childItem.name,
+          text: childItem.name
+        });
+      }
+      children1.push({
+        name: item1.name,
+        text: item1.text,
+        children: children2
+      });
+    }
+  }
+  return {
+    name: s.name,
+    text: s.text,
+    children: children1
+  };
 }

@@ -1,6 +1,6 @@
 import { onMount, Show } from "solid-js";
 import { InformationSchema, InformationSpecificationSchema } from "~/lib/definition";
-import { dashboardPath } from "~/lib/utility";
+import { dashboardPath, breadcrumbInformation } from "~/lib/utility";
 import { useDashboard } from "~/context/DashboardContext";
 import SpecificationTable from "~/components/information/SpecificationTable";
 import Breadcrumb from "~/components/navigation/Breadcrumb";
@@ -17,21 +17,21 @@ export default function Information() {
     }
   });
 
-  const children1 = () => {
-    const s = schema() as InformationSchema;
-    if (!s) return [];
-    return Array.isArray(s.children) ? s.children.flatMap((item) => { return { name: item.name, text: item.text } }) : [];
-  };
+  // get object from dashboard schema
   const table = () => {
     const s = schema() as InformationSchema;
     if (!s) return [];
     const children = s.children as InformationSpecificationSchema[];
     return Array.isArray(children) ? children.find((item) => item.name == "specification")?.table : [];
   };
+  // transform dashboard schema to breadcrumb schema
+  const breadcrumb = () => breadcrumbInformation(schema() as InformationSchema);
 
   return(
     <Show when={table()}>
-      <Breadcrumb dashboard={path.name} parent={{ name: "information", text: "Information" }} children1={children1()} children2={[]} child1={path.submenu} child2="" />
+      <Show when={breadcrumb()}>
+        <Breadcrumb dashboard={path.name} schema={breadcrumb()!} />
+      </Show>
       <SpecificationTable table={table()!} />
     </Show>
   );

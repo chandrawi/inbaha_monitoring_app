@@ -1,6 +1,6 @@
 import { onMount, Match, Show, Switch } from "solid-js";
 import { DataLogSchema, DataLogViewSchema, DatasetLogViewSchema } from "~/lib/definition";
-import { dashboardPath } from "~/lib/utility";
+import { dashboardPath, breadcrumbDataLog } from "~/lib/utility";
 import { useResource } from "~/context/ResourceContext";
 import { useDashboard } from "~/context/DashboardContext";
 import Breadcrumb from "~/components/navigation/Breadcrumb";
@@ -21,27 +21,8 @@ export default function DataLogItem() {
     }
   });
 
-  const children1 = () => {
-    const s = schema() as DataLogSchema;
-    if (!s) return[];
-    return Array.isArray(s.children) ? s.children.flatMap((item) => { return { name: item.name, text: item.text } }) : [];
-  };
-  const children2 = () => {
-    const s = schema() as DataLogSchema;
-    if (!s) return[];
-    if (Array.isArray(s.children)) {
-      const v = s.children.find((item) => item.name == path.submenu);
-      if (!v) return [];
-      if ("devices" in v) {
-        return v ? v.devices?.flatMap((item) => { return { name: item.name, text: item.name, parent: v.name } }): [];
-      }
-      if ("sets" in v) {
-        return v ? v.sets?.flatMap((item) => { return { name: item.name, text: item.name, parent: v.name } }): [];
-      }
-    }
-    return [];
-  };
-
+  const mode = () => (schema() as DataLogSchema).mode;
+  // take a dashboard schema child matched with submenu path
   const data_log = () => {
     const s = schema() as DataLogSchema;
     if (!s) return;
@@ -50,10 +31,14 @@ export default function DataLogItem() {
       return c.find((item) => item.name == path.submenu);
     }
   };
+  // transform dashboard schema to breadcrumb schema
+  const breadcrumb = () => breadcrumbDataLog(schema() as DataLogSchema);
 
   return (
     <Show when={schema()}>
-      <Breadcrumb dashboard={path.name} parent={{ name: "data_log", text: "Data Log" }} children1={children1()} children2={children2()} child1={path.submenu} child2={path.item} />
+      <Show when={breadcrumb()}>
+        <Breadcrumb mode={mode()} dashboard={path.name} schema={breadcrumb()!} />
+      </Show>
       <Show when={resource() && data_log()}>
         <Switch>
           <Match when={data_log()!.component == "data_log_view"}>

@@ -62,7 +62,6 @@ export type InformationSchema = BasicSchema & {
 };
 
 export type DataLogViewSchema = BasicSchema & {
-  component: string,
   model_id: string;
   model_index: number[];
   devices: {
@@ -80,7 +79,6 @@ export type DataLogViewSchema = BasicSchema & {
 };
 
 export type DatasetLogViewSchema = BasicSchema & {
-  component: string,
   sets: {
     id: string;
     name: string;

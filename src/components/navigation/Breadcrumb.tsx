@@ -20,12 +20,6 @@ interface BreadcrumbProps {
   schema: BreadcrumbSchema;
 };
 
-declare module "solid-js" {
-  interface Directives {
-    clickOutside: () => void;
-  }
-}
-
 export default function Breadcrumb(props: BreadcrumbProps) {
   const mode = () => props.mode ? props.mode : "nested";
   const child1 = () => dashboardPath().submenu;
@@ -91,7 +85,7 @@ export default function Breadcrumb(props: BreadcrumbProps) {
       <Show when={mode() == "nested"}>
         <Show when={children2().length} fallback={
           <div class="min-w-24 h-full relative bg-sky-100 dark:bg-sky-950 text-sm rounded-sm">
-            <button class="group w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300"
+            <button class="w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300"
               onclick={() => setDropdown1(!dropdown1())}
               use:clickOutsideDirective={() => setDropdown1(true)}
             >
@@ -121,7 +115,7 @@ export default function Breadcrumb(props: BreadcrumbProps) {
       <Show when={(child1Text() || mode() != "nested") && children2().length}>
         <div class="min-w-24 h-full relative bg-sky-100 dark:bg-sky-950 text-sm rounded-sm">
           <button 
-            class="group w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300"
+            class="w-full h-full px-2 py-0.5 flex flex-row items-center justify-between text-gray-800 hover:text-sky-800 dark:text-gray-50 dark:hover:text-sky-300"
             onclick={() => setDropdown2(!dropdown2())}
             use:clickOutsideDirective={() => setDropdown2(true)}
           >

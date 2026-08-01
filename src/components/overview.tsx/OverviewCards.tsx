@@ -2,7 +2,7 @@ import { Show, For, createSignal, createResource, createEffect } from "solid-js"
 import { useSearchParams } from "@solidjs/router";
 import { read_set, list_model_by_ids, list_data_set_by_range } from "bbthings_grpc/resource";
 import { resourceServer } from "~/lib/store";
-import { dateToString } from "~/lib/utility";
+import { dateToString, rangeName } from "~/lib/utility";
 import { ResourceSchema, OverviewCardsSchema } from "~/lib/definition";
 
 interface OverviewCardsProps {
@@ -105,15 +105,6 @@ export default function OverviewCards(props: OverviewCardsProps) {
     if (typeof searchParams.later === "string") selectRange.value = searchParams.later;
     else selectRange.value = String(config.live_range);
   });
-  function rangeName(range: number) {
-    if (range < 60000) return String(range / 1000) + " seconds";
-    else if(range == 60000) return "1 minute";
-    else if(range < 3600000) return String(range / 60000) + " minutes";
-    else if(range == 3600000) return "1 hour";
-    else if(range < 86400000) return String(range / 3600000) + " hours";
-    else if(range == 86400000) return "1 day";
-    else return String(range / 86400000) + " days";
-  }
 
   return (
     <>

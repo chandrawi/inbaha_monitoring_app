@@ -2,7 +2,7 @@
   "name":"overview_cards",
   "text": "Overview Cards",
   "icon": "icon-list_square",
-  "set": { "id": "00000000-0000-0000-0000-000000000000", "name": "overview_cards" },
+  "set": { "id": "0944dd19-a398-495a-bfc1-b5899ce4056c", "name": "overview_cards" },
   "config": {
     "live_ranges": [1800000, 3600000, 14400000, 43200000, 86400000, 604800000, 2592000000],
     "live_range": 3600000,

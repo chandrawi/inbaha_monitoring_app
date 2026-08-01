@@ -8,7 +8,6 @@
       "name": "sensor_a",
       "text": "Sensor A",
       "icon": "icon-list_square",
-      "component": "data_log_view",
       "model_id": "1465e00f-41bb-4d74-88ad-67e7bcdf6181",
       "model_index": [0],
       "devices": [
@@ -28,7 +27,6 @@
       "name": "sensor_b",
       "text": "Sensor B",
       "icon": "icon-list_square",
-      "component": "data_log_view",
       "model_id": "4728932b-7e61-4793-a0cc-e3a9b789ebcf",
       "model_index": [0],
       "devices": [
@@ -48,7 +46,6 @@
       "name": "sensor_c",
       "text": "Sensor C",
       "icon": "icon-list_square",
-      "component": "data_log_view",
       "model_id": "7a07c4a7-517b-4c0b-93ac-703a0d1be8e3",
       "model_index": [0],
       "devices": [
@@ -68,7 +65,6 @@
       "name": "power_monitor",
       "text": "Power Monitor",
       "icon": "icon-list_square",
-      "component": "data_log_view",
       "model_id": "cfe2c3d4-a44d-4ad9-8660-3c122e5caf89",
       "model_index": [1,2,5,6],
       "devices": [

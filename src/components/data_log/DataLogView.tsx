@@ -1,5 +1,5 @@
 import { useSearchParams } from "@solidjs/router";
-import { createEffect, createResource, createSignal, For, Show } from "solid-js";
+import { createEffect, createMemo, createResource, createSignal, For, Show } from "solid-js";
 import { list_data_by_range, read_model } from "bbthings_grpc/resource";
 import { resourceServer } from "~/lib/store";
 import { dashboardPath, dateToString, rangeName } from "~/lib/utility";
@@ -15,7 +15,7 @@ export default function DataLogView(props: DataLogViewProps) {
   const api_id = props.resource.api_id;
 
   // take a data_log child schema matched with submenu path or first child for single mode
-  const data_log = () => {
+  const data_log = createMemo(() => {
     const dp = dashboardPath();
     if (Array.isArray(props.data_log.children)) {
       const c = props.data_log.children.find((item) => item.name == dp.submenu);
@@ -24,10 +24,10 @@ export default function DataLogView(props: DataLogViewProps) {
       }
       return c as DataLogViewSchema;
     };
-  };
+  });
   const config = () => data_log()?.config;
   // construct resource input object using data_log schema and dashboard path
-  const input = () => {
+  const input = createMemo(() => {
     const dp = dashboardPath();
     const dl = data_log();
     if (dl) {
@@ -36,7 +36,7 @@ export default function DataLogView(props: DataLogViewProps) {
       }
       return { data_log: dl, path: dp };
     }
-  };
+  });
   const deviceMeta = () => data_log()?.devices.find((item) => item.name == input()?.path.item);
 
   const [searchParams, setSearchParams] = useSearchParams();

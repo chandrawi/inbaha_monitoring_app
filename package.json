@@ -6,7 +6,7 @@
     "build": "vinxi build",
     "start": "vinxi start",
     "preview": "vinxi preview",
-    "postbuild": "bun run src/lib/minify_json.ts"
+    "postbuild": "bun run src/lib/build_json.ts"
   },
   "dependencies": {
     "@solidjs/meta": "^0.29.4",

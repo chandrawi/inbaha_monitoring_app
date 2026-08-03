@@ -1,12 +1,14 @@
 import { Glob } from "bun";
 import { gzipSync, brotliCompressSync, constants } from "node:zlib";
 
-const ROOT = ".output/public";
+const ROOT = "public";
+const OUTPUT = ".output";
 const glob = new Glob("**/*.json");
 let processed = 0;
 
 for await (const file of glob.scan(ROOT)) {
   const path = `${ROOT}/${file}`;
+  const output_path = `${OUTPUT}/${ROOT}/${file}`;
 
   try {
     // Parse & minify JSON
@@ -14,14 +16,14 @@ for await (const file of glob.scan(ROOT)) {
     const minified = JSON.stringify(json);
 
     // Overwrite file JSON with minified version
-    await Bun.write(path, minified);
+    await Bun.write(output_path, minified);
 
     // Only compress file if compressed file result is shorter
     const size = Buffer.byteLength(minified, "utf8");
 
     const gzip = gzipSync(minified, { level: 9 });
     if (gzip.length < size) {
-      await Bun.write(`${path}.gz`, gzip);
+      await Bun.write(`${output_path}.gz`, gzip);
     }
     
     const br = brotliCompressSync(minified, {
@@ -30,7 +32,7 @@ for await (const file of glob.scan(ROOT)) {
       },
     });
     if (br.length < size) {
-      await Bun.write(`${path}.br`, br);
+      await Bun.write(`${output_path}.br`, br);
     }
 
     processed++;
